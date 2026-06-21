@@ -37,7 +37,7 @@
 <body>
   <div class="data-warning" id="data-warning" role="alert">
     <span class="dw-icon" aria-hidden="true">⚠️</span>
-    <span class="dw-text" id="dw-text">שימו לב: הנתונים נוצרו אוטומטית. התאריכים הוצלבו באופן ממוכן מול מקורות ויקימדיה (ויקיפדיה וויקינתונים), אך לא עברו בדיקה אנושית — ייתכנו טעויות בתאריכים, בשמות ובפרטים. אמתו מול מקור מהימן לפני הסתמכות.</span>
+    <span class="dw-text" id="dw-text">שימו לב: הנתונים נוצרו אוטומטית. התאריכים הוצלבו באופן ממוחשב מול מקורות ויקימדיה (ויקיפדיה וויקינתונים), אך לא עברו בדיקה אנושית — ייתכנו טעויות בתאריכים, בשמות ובפרטים. אמתו מול מקור מהימן לפני הסתמכות.</span>
     <button type="button" class="dw-close" id="dw-close" aria-label="סגירת ההודעה">×</button>
   </div>
   <header class="topbar">
@@ -66,6 +66,8 @@
         <span class="switch" aria-hidden="true"></span>
         <span class="evt-label" id="evt-label">אירועים היסטוריים</span>
       </label>
+
+      <button id="about-btn" class="about-btn" type="button">אודות</button>
     </div>
   </header>
 
@@ -105,6 +107,16 @@
   </div>
 
   <div class="tooltip" id="tooltip" hidden></div>
+
+  <div class="modal-overlay" id="about-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="about-title">
+      <header class="modal-head">
+        <span class="modal-title" id="about-title">אודות הפרויקט</span>
+        <button id="about-close" class="modal-close" type="button" title="סגור" aria-label="סגור">✕</button>
+      </header>
+      <div class="modal-body" id="about-body"></div>
+    </div>
+  </div>
 
   <aside class="drawer" id="drawer" hidden>
     <header class="drawer-head">

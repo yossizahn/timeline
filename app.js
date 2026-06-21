@@ -36,7 +36,7 @@ const I18N = {
     mapTitle: "מרכזי התורה בעולם",
     mapHint: "לחצו על אזור כדי לסנן",
     mapToggle: "הצג/הסתר מפה",
-    warn: "שימו לב: הנתונים נוצרו אוטומטית. התאריכים הוצלבו באופן ממוכן מול מקורות ויקימדיה (ויקיפדיה וויקינתונים), אך לא עברו בדיקה אנושית — ייתכנו טעויות בתאריכים, בשמות ובפרטים. אמתו מול מקור מהימן לפני הסתמכות.",
+    warn: "שימו לב: הנתונים נוצרו אוטומטית. התאריכים הוצלבו באופן ממוחשב מול מקורות ויקימדיה (ויקיפדיה וויקינתונים), אך לא עברו בדיקה אנושית — ייתכנו טעויות בתאריכים, בשמות ובפרטים. אמתו מול מקור מהימן לפני הסתמכות.",
     warnClose: "סגירת ההודעה",
     dMobile: "גרסת מובייל של ויקיפדיה",
     dOpen: "פתח בלשונית חדשה",
@@ -49,6 +49,19 @@ const I18N = {
     approx: "לערך",
     centerMove: "מעבר מרכז התורה",
     wikiGo: "↗ ויקיפדיה — לחצו לפתיחה",
+    aboutBtn: "אודות",
+    aboutTitle: "אודות הפרויקט",
+    aboutClose: "סגור",
+    aboutBody:
+      "<p>ציר זמן אינטראקטיבי ואנכי של חכמי ישראל — תנאים, אמוראים, גאונים, ראשונים ואחרונים — לצד חיבוריהם, מרכזי התורה בעולם, ואירועים מההיסטוריה היהודית והכללית. הציר נגלל לאורך הדורות; רחיפה מציגה פרטים ולחיצה פותחת את הערך בוויקיפדיה.</p>" +
+      "<h3>מקורות הנתונים</h3>" +
+      "<p>הנתונים נאספו ונערכו באופן אוטומטי. תאריכי הלידה והפטירה הוצלבו באופן ממוחשב מול מקורות ויקימדיה: לכל דמות אותר הערך בוויקיפדיה העברית, וממנו פריט ויקינתונים (Wikidata) המתאים, שמתוכו נשלפו שנת הלידה (<code>P569</code>) ושנת הפטירה (<code>P570</code>) והושוו לנתוני הציר. כשנמצאה אי-התאמה, הוכרעה השנה לפי גוף הערך בוויקיפדיה העברית.</p>" +
+      "<h3>שנים ותאריכים</h3>" +
+      "<p>הלידה והפטירה מוצגות לפי הספירה הנוצרית (לספירה). השנה העברית מחושבת כשנה הלועזית בתוספת 3760 — בקירוב, שכן ייתכן הפרש של שנה סביב ראש השנה. הסימן ± מציין תאריך מסורתי או משוער, הנפוץ במיוחד בקרב התנאים והאמוראים, שתאריכיהם אינם ודאיים.</p>" +
+      "<h3>קישורי ויקיפדיה</h3>" +
+      "<p>בעברית הקישור מוביל ישירות לערך; באנגלית הוא נקבע לפי הקישור הבין-לשוני שבערך העברי, ובהיעדר ערך מקביל מתבצע חיפוש.</p>" +
+      "<h3>הסתייגות</h3>" +
+      "<p>הנתונים לא עברו בדיקה אנושית מלאה וייתכנו טעויות בתאריכים, בשמות ובפרטים. יש לאמת מול מקור מהימן לפני הסתמכות.</p>",
   },
   en: {
     title: "Timeline — Sages of Israel",
@@ -76,6 +89,19 @@ const I18N = {
     approx: "approx.",
     centerMove: "Torah center moves",
     wikiGo: "↗ Wikipedia — click to open",
+    aboutBtn: "About",
+    aboutTitle: "About this project",
+    aboutClose: "Close",
+    aboutBody:
+      "<p>An interactive, vertical timeline of the sages of Israel — Tannaim, Amoraim, Geonim, Rishonim and Acharonim — alongside their works, the world's centers of Torah, and events from Jewish and general history. Scroll through the generations; hover for details and click to open the Wikipedia article.</p>" +
+      "<h3>Data sources</h3>" +
+      "<p>The data was compiled and edited automatically. Birth and death years were machine-crosschecked against Wikimedia sources: each figure's Hebrew Wikipedia article was resolved to its Wikidata item, from which the birth year (<code>P569</code>) and death year (<code>P570</code>) were read and compared with the timeline. Where they disagreed, the year was adjudicated against the body of the Hebrew Wikipedia article.</p>" +
+      "<h3>Years and dates</h3>" +
+      "<p>Birth and death are shown in the Common Era (CE). The Hebrew year is the CE year plus 3760 — approximately, since it can differ by a year around Rosh Hashanah. A ± marks a traditional or approximate date, common especially among the Tannaim and Amoraim, whose dates are uncertain.</p>" +
+      "<h3>Wikipedia links</h3>" +
+      "<p>In Hebrew the link goes straight to the article; in English it follows the interlanguage link in the Hebrew article, falling back to a search when no parallel article exists.</p>" +
+      "<h3>Disclaimer</h3>" +
+      "<p>The data has not been fully human-verified and may contain errors in dates, names, and details. Confirm against a reliable source before relying on it.</p>",
   },
 };
 const t = (k) => I18N[lang][k];
@@ -202,7 +228,16 @@ document.getElementById("d-mobile").addEventListener("click", () => {
 });
 syncMobileBtn();
 document.getElementById("d-close").addEventListener("click", closeDrawer);
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
+
+// ---- About modal ----
+const aboutOverlay = document.getElementById("about-overlay");
+function openAbout() { aboutOverlay.hidden = false; }
+function closeAbout() { aboutOverlay.hidden = true; }
+document.getElementById("about-btn").addEventListener("click", openAbout);
+document.getElementById("about-close").addEventListener("click", closeAbout);
+aboutOverlay.addEventListener("click", (e) => { if (e.target === aboutOverlay) closeAbout(); });
+
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeDrawer(); closeAbout(); } });
 
 function figureTip(f) {
   const books = f.books.map((b) => {
@@ -640,6 +675,11 @@ function applyLang() {
   setTitle("d-mobile", t("dMobile"));
   setTitle("d-open", t("dOpen"));
   setTitle("d-close", t("dClose"));
+  setText("about-btn", t("aboutBtn"));
+  setText("about-title", t("aboutTitle"));
+  setTitle("about-close", t("aboutClose"));
+  const acl = document.getElementById("about-close"); if (acl) acl.setAttribute("aria-label", t("aboutClose"));
+  const abody = document.getElementById("about-body"); if (abody) abody.innerHTML = t("aboutBody");
 
   const lg = document.getElementById("lang-group"); if (lg) lg.setAttribute("aria-label", t("langGroup"));
   const yg = document.getElementById("year-group"); if (yg) yg.setAttribute("aria-label", t("yearGroup"));
