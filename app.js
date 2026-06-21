@@ -81,22 +81,10 @@ const I18N = {
 const t = (k) => I18N[lang][k];
 const isRTL = () => lang === "he";
 
-// English search terms where deriving from the label is unreliable.
-const EN_OVERRIDE = {
-  "הגר\"א (הגאון מווילנא)": "Vilna Gaon",
-  "חזון איש": "Chazon Ish",
-  "הראי\"ה קוק": "Abraham Isaac Kook",
-  "ערוך השולחן (י\"מ עפשטיין)": "Yechiel Michel Epstein",
-  "ר' ישראל סלנטר": "Israel Salanter",
-  "ר' משה פיינשטיין": "Moshe Feinstein",
-  "מגן אברהם": "Abraham Abele Gombiner",
-  "בן איש חי (יוסף חיים)": "Yosef Hayyim",
-  "מהרי\"ל (יעקב מולין)": "Yaakov Moelin",
-  "מהרי\"ק (יוסף קולון)": "Joseph Colon Trabotto",
-};
+// Fallback English search term, used only when WIKI_EN has no authoritative
+// title for this figure (see enUrl). Prefer the real name inside parentheses.
 function enTerm(f) {
-  if (EN_OVERRIDE[f.he]) return EN_OVERRIDE[f.he];
-  const m = f.en.match(/\(([^)]+)\)/); // prefer the real name inside parentheses
+  const m = f.en.match(/\(([^)]+)\)/);
   return m ? m[1] : f.en;
 }
 // Hebrew: direct article. English: search-with-go (lands on the article even
@@ -106,8 +94,14 @@ function enTerm(f) {
 // drawer's 📱 toggle opts into the .m host for the nicer mobile reading layout.
 let mobileWiki = localStorage.getItem("mobileWiki") === "1";
 const wikiHost = (lang) => lang + (mobileWiki ? ".m" : "") + ".wikipedia.org";
-const heUrl = (term) => "https://" + wikiHost("he") + "/wiki/" + encodeURIComponent(term.replace(/ /g, "_"));
-const enUrl = (term) => "https://" + wikiHost("en") + "/w/index.php?search=" + encodeURIComponent(term) + "&go=Go";
+const articleUrl = (lang, title) => "https://" + wikiHost(lang) + "/wiki/" + encodeURIComponent(title.replace(/ /g, "_"));
+const heUrl = (term) => articleUrl("he", term);
+// English: prefer the authoritative title from the article's language switcher
+// (WIKI_EN, keyed by the he title) for a direct, never-dead article link; fall
+// back to search-with-go only where no English article exists.
+const enUrl = (heTitle, term) => WIKI_EN[heTitle]
+  ? articleUrl("en", WIKI_EN[heTitle])
+  : "https://" + wikiHost("en") + "/w/index.php?search=" + encodeURIComponent(term) + "&go=Go";
 
 const y = (year) => (year - START) * PX;     // CE year -> vertical px
 const totalH = y(END);
@@ -183,7 +177,7 @@ function openDrawer(heTerm, enTermStr, title) {
 }
 function setDrawerLang(lang) {
   drawerLang = lang;
-  const url = lang === "he" ? heUrl(drawerTerms.he) : enUrl(drawerTerms.en);
+  const url = lang === "he" ? heUrl(drawerTerms.he) : enUrl(drawerTerms.he, drawerTerms.en);
   document.getElementById("d-frame").src = url;
   document.getElementById("d-open").href = url;
   document.getElementById("d-he").classList.toggle("active", lang === "he");

@@ -36,6 +36,11 @@ Live at <https://yossizahn.github.io/timeline/>.
 - **`REGIONS{}`**: each has `mx,my` = dot position in the map's `285×252` space (plus `off:true` for
   out-of-frame USA). **`MIGRATION[]`**: cubic-Bézier paths in the same space (Bavel → west).
 - **`ERAS{}`**: ordered chronologically (tannaim → acharonim); drives the legend and bar colors.
+- **`WIKI_EN{}`** (bottom of `data.js`): authoritative `en.wikipedia` titles keyed by the `w`
+  (he.wikipedia) title, pulled from each article's **language switcher** (he→en interlanguage
+  links). **GENERATED — don't hand-edit**; regenerate via the langlinks API
+  (`prop=langlinks&lllang=en`) after adding/renaming figures. `app.js` links the English drawer
+  directly to `WIKI_EN[w]`; entries with no English article fall back to search-with-go.
 
 ## Year math
 
@@ -54,8 +59,10 @@ Vertical position: `y(year) = (year - START) * PX`, with `START`/`END`/`PX` from
 
 ## Wikipedia links (important)
 
-- Drawer links use **desktop** domains (`he.wikipedia.org`, `en.wikipedia.org/.../index.php?search=…&go=Go`).
-  The **mobile** `.m` host's redirect can *abort* inside the iframe on some networks — never use it.
+- Drawer links use **desktop** domains. Hebrew → direct `/wiki/` article. English → direct
+  `/wiki/` article when `WIKI_EN[w]` has the language-switcher title (the common case), else
+  `…/index.php?search=…&go=Go`. The **mobile** `.m` host's redirect can *abort* inside the iframe
+  on some networks — never use it.
 - **Verify every new `w` (he.wikipedia) title exists before adding it.** Broken titles have slipped in
   before. Batch-check with the Wikipedia API and use the canonical target when a title resolves via
   `redirect`; fix anything reported `missing`:
