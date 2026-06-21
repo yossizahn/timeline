@@ -275,6 +275,12 @@ const FIGURES = [
     books: [{ y: 1175, he: "תוספות", en: "Tosafot (Talmudic glosses)" }],
   },
   {
+    era: "rishonim", he: "ראב\"ד (אברהם בן דוד)", en: "Raavad (Abraham ben David of Posquières)",
+    born: 1125, died: 1198, region: "provans", place: "פושקירה, פרובנס",
+    w: "אברהם בן דוד מפושקירה", note: "מגדולי חכמי פרובנס; השגותיו נדפסות לצד משנה תורה לרמב\"ם.",
+    books: [{ y: 1185, he: "השגות הראב\"ד / בעלי הנפש", en: "Hasagot on Mishneh Torah; Ba'alei ha-Nefesh" }],
+  },
+  {
     era: "rishonim", he: "רמב\"ם (משה בן מימון)", en: "Rambam (Maimonides)",
     born: 1138, died: 1204, region: "sefarad", place: "קורדובה, ספרד → פוסטאט, מצרים",
     w: "רמב\"ם", note: "פוסק, פילוסוף ורופא; \"מִמֹּשֶׁה עד מֹשֶׁה...\".",
