@@ -34,7 +34,7 @@ function enTerm(f) {
 // when the exact title differs), so we never hit a dead link.
 // NB: use the desktop domain — on some networks the .m mobile host's redirect
 // aborts inside an iframe, while the desktop host follows redirects cleanly.
-const heUrl = (term) => "https://he.wikipedia.org/wiki/" + encodeURIComponent(term);
+const heUrl = (term) => "https://he.wikipedia.org/wiki/" + encodeURIComponent(term.replace(/ /g, "_"));
 const enUrl = (term) => "https://en.wikipedia.org/w/index.php?search=" + encodeURIComponent(term) + "&go=Go";
 
 const y = (year) => (year - START) * PX;     // CE year -> vertical px
