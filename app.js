@@ -170,9 +170,7 @@ function buildCols() {
   field.className = "field";
   field.style.width = FIELD_W + "px";
   field.style.height = totalH + "px";
-  // reserve the left rail for events (inline-end = left under RTL)
-  const showEvents = document.getElementById("show-events").checked;
-  field.style.marginInlineEnd = showEvents ? EVT_GUTTER + "px" : "0";
+  // the events sidebar is a separate column now — the field needs no left reserve
 
   layout.items.forEach((f) => {
     const top = y(f.born);
@@ -275,7 +273,14 @@ function buildMap() {
     el.addEventListener("click", () => toggleRegion(el.dataset.region)));
 }
 
-const EVT_GUTTER = parseFloat(css.getPropertyValue("--evt-gutter")) || 212;
+// gutter width is user-resizable (drag handle on the rail's inner edge); persisted
+const GUTTER_MIN = 150, GUTTER_MAX = 480;
+let EVT_GUTTER = (() => {
+  const saved = parseFloat(localStorage.getItem("evtGutter"));
+  const base = saved || parseFloat(css.getPropertyValue("--evt-gutter")) || 250;
+  return Math.min(GUTTER_MAX, Math.max(GUTTER_MIN, base));
+})();
+document.documentElement.style.setProperty("--evt-gutter", EVT_GUTTER + "px");
 
 function buildEvents() {
   const layer = document.getElementById("events");
@@ -283,6 +288,18 @@ function buildEvents() {
   const show = document.getElementById("show-events").checked;
   layer.style.display = show ? "block" : "none";
   if (!show) return;
+
+  // everything except the resize handle lives in .einner (translated by -scrollTop)
+  const einner = document.createElement("div");
+  einner.className = "einner";
+  layer.appendChild(einner);
+
+  // resize handle on the rail's inner edge (stays full-height, not translated)
+  const handle = document.createElement("div");
+  handle.className = "erail-handle";
+  handle.title = "גררו לשינוי רוחב";
+  handle.addEventListener("pointerdown", startGutterResize);
+  layer.appendChild(handle);
 
   const spineX = EVT_GUTTER - 1;      // spine sits at the gutter's inner edge
   const flagInset = 12;               // flag's right edge distance from the spine
@@ -297,17 +314,6 @@ function buildEvents() {
     lastY = labelY;
     return { evt, trueY, labelY };
   });
-
-  // solid backing so figures slide cleanly behind the pinned rail
-  const bg = document.createElement("div");
-  bg.className = "erail-bg";
-  bg.style.height = totalH + "px";
-  layer.appendChild(bg);
-
-  // full-width correlation line (revealed on hover)
-  const hl = document.createElement("div");
-  hl.className = "ehl";
-  layer.appendChild(hl);
 
   // spine + dots + leader lines (SVG)
   const NS = "http://www.w3.org/2000/svg";
@@ -329,13 +335,13 @@ function buildEvents() {
     inner += `<circle cx="${spineX}" cy="${trueY}" r="${r}" fill="${c}"/>`;
   });
   svg.innerHTML = inner;
-  layer.appendChild(svg);
+  einner.appendChild(svg);
 
   // labels (right-aligned to the spine inside the gutter)
   const fwrap = document.createElement("div");
   fwrap.className = "eflags";
   fwrap.style.width = EVT_GUTTER + "px";
-  layer.appendChild(fwrap);
+  einner.appendChild(fwrap);
 
   placed.forEach(({ evt, trueY }, i) => {
     const flag = document.createElement("div");
@@ -351,12 +357,8 @@ function buildEvents() {
       showTip(`<h4>${evt.he}</h4><div class="en">${evt.en}</div>` +
               `<div class="meta">${fmtYear(evt.y)}</div>${place}${note}` +
               `<div class="go">↗ ויקיפדיה — לחצו לפתיחה</div>`, e));
-    flag.addEventListener("mouseenter", () => {
-      hl.style.top = trueY + "px";
-      hl.style.borderTopColor = evColor(evt);
-      hl.classList.add("show");
-    });
-    flag.addEventListener("mouseleave", () => { hideTip(); hl.classList.remove("show"); });
+    flag.addEventListener("mouseenter", () => showHL(trueY, evColor(evt)));
+    flag.addEventListener("mouseleave", () => { hideTip(); hideHL(); });
     flag.addEventListener("click", () => {
       hideTip();
       openDrawer(evt.w, evt.en.split(/[;&]/)[0].trim(), evt.he);
@@ -373,21 +375,67 @@ function buildLegend() {
 
 function renderAll() { buildGrid(); buildCols(); buildEvents(); syncRail(); }
 
-// Pin the events rail to the viewport's left edge during horizontal scroll
-// (RTL-proof: counter the horizontal offset with a transform; vertical scroll
-// is left alone so the rail still tracks the timeline up/down).
+// The events sidebar is a flex column beside the scroller. It doesn't move
+// horizontally; we only translate its inner layer by -scrollTop so it tracks the
+// timeline's vertical scroll.
 const chartWrap = document.getElementById("chart-wrap");
-let railTx = 0;
 function syncRail() {
   const ev = document.getElementById("events");
   if (!ev || ev.style.display === "none") return;
-  const wrapLeft = chartWrap.getBoundingClientRect().left;
-  const baseLeft = ev.getBoundingClientRect().left - railTx; // un-transformed position
-  railTx = wrapLeft - baseLeft;
-  ev.style.transform = `translateX(${railTx}px)`;
+  const einner = ev.querySelector(".einner");
+  if (einner) einner.style.transform = `translateY(${-chartWrap.scrollTop}px)`;
+  positionHL();
 }
 chartWrap.addEventListener("scroll", syncRail, { passive: true });
 window.addEventListener("resize", syncRail);
+
+// ---------- correlation line (fixed across the chart, follows vertical scroll) ----------
+const ehl = document.createElement("div");
+ehl.className = "ehl";
+document.body.appendChild(ehl);
+let hlY = null, hlColor = null;       // hlY is in canvas coords (same as y())
+function positionHL() {
+  if (hlY === null) return;
+  const r = chartWrap.getBoundingClientRect();
+  ehl.style.top = (r.top + hlY - chartWrap.scrollTop) + "px";
+  ehl.style.left = r.left + "px";     // span only the chart, not the sidebar
+  ehl.style.width = r.width + "px";
+}
+function showHL(canvasY, color) {
+  hlY = canvasY; hlColor = color;
+  ehl.style.borderTopColor = color;
+  positionHL();
+  ehl.classList.add("show");
+}
+function hideHL() { hlY = null; ehl.classList.remove("show"); }
+
+// ---------- resizable events sidebar ----------
+function startGutterResize(e) {
+  e.preventDefault();
+  const layer = document.getElementById("events");
+  layer.classList.add("resizing");
+  document.body.classList.add("col-resizing");
+  hideHL(); hideTip();
+  const railLeft = layer.getBoundingClientRect().left;
+  let raf = 0;
+  const onMove = (ev) => {
+    const w = Math.min(GUTTER_MAX, Math.max(GUTTER_MIN, ev.clientX - railLeft));
+    if (w === EVT_GUTTER) return;
+    EVT_GUTTER = w;
+    document.documentElement.style.setProperty("--evt-gutter", w + "px");
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; buildEvents(); syncRail(); });
+  };
+  const onUp = () => {
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+    layer.classList.remove("resizing");
+    document.body.classList.remove("col-resizing");
+    localStorage.setItem("evtGutter", EVT_GUTTER);
+    renderAll();
+  };
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp);
+}
 
 // ---------- events ----------
 document.getElementById("btn-heb").addEventListener("click", () => setMode("heb"));

@@ -73,7 +73,11 @@ body { display: flex; flex-direction: column; height: 100vh; }
 .region-reset[hidden] { display: none; }
 
 /* ---------- Chart ---------- */
-.chart-wrap { flex: 1; overflow: auto; position: relative; }
+/* chart-area is a row: the scroller on the right (RTL start), the events
+   sidebar pinned on the physical left. The sidebar lives OUTSIDE the scroller,
+   so figures never slide under it and horizontal scroll can't grow the page. */
+.chart-area { flex: 1; display: flex; flex-direction: row; min-height: 0; overflow: hidden; }
+.chart-wrap { flex: 1 1 auto; min-width: 0; overflow: auto; position: relative; }
 .chart { position: relative; }
 
 /* canvas holds the dated content */
@@ -92,32 +96,45 @@ body { display: flex; flex-direction: column; height: 100vh; }
 }
 .grid .ylabel .heb { font-family: "Rubik", sans-serif; font-weight: 700; color: var(--ink); font-size: 13px; }
 
-/* events: a left rail with a spine, dots at the exact year, de-clustered labels.
-   position:sticky pins it to the left during horizontal scroll while it still
-   scrolls vertically with the timeline. height:0 so it doesn't push the figures. */
+/* events: a left sidebar with a spine, dots at the exact year, de-clustered labels.
+   It's a flex column beside the scroller (NOT inside it), so figures never slide
+   under it and horizontal scroll can't grow the scrollable width. .einner is
+   translated by -scrollTop to track the timeline's vertical scroll. */
 .events {
-  position: absolute; left: 0; top: 0; z-index: 5;
-  width: var(--evt-gutter); height: 0;
-  pointer-events: none;
-  will-change: transform;  /* JS pins it to the viewport-left during horizontal scroll */
-}
-.events .erail-bg {
-  position: absolute; left: 0; top: 0; width: 100%;
+  position: relative; z-index: 5;
+  flex: 0 0 var(--evt-gutter); width: var(--evt-gutter);
+  overflow: hidden;        /* clip flags to the chart viewport, top and bottom */
   background: var(--bg);
-  border-inline-end: 1px solid var(--line);
+  border-right: 1px solid var(--line);
   box-shadow: 7px 0 16px -10px rgba(0,0,0,.22);
-  pointer-events: auto;
+}
+.events[hidden] { display: none; }
+.events .einner {
+  position: absolute; left: 0; top: 0; width: 100%;
+  will-change: transform;  /* JS translateY(-scrollTop) tracks vertical scroll */
 }
 .events .espine { position: absolute; left: 0; top: 0; overflow: visible; }
 .events .espine .spine-line { stroke: var(--axis); stroke-width: 1; opacity: .55; }
 .events .eflags { position: absolute; left: 0; top: 0; }
-/* full-width correlation line, emanates from the spine, revealed on hover */
-.events .ehl {
-  position: absolute; left: 100%; width: 100vw; height: 0;
+/* drag handle on the rail's inner edge to resize the gutter */
+.events .erail-handle {
+  position: absolute; top: 0; bottom: 0; right: -4px; width: 9px;
+  cursor: col-resize; pointer-events: auto; z-index: 9;
+}
+.events .erail-handle::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 4px; width: 1px;
+  background: var(--shift); opacity: 0; transition: opacity .12s ease;
+}
+.events .erail-handle:hover::after,
+.events.resizing .erail-handle::after { opacity: .6; width: 2px; }
+body.col-resizing { cursor: col-resize; user-select: none; }
+/* full-width correlation line, fixed across the chart, revealed on hover */
+.ehl {
+  position: fixed; left: 0; width: 100vw; height: 0; z-index: 4;
   border-top: 1px dashed var(--event); opacity: 0; transition: opacity .12s ease;
   pointer-events: none;
 }
-.events .ehl.show { opacity: .45; }
+.ehl.show { opacity: .45; }
 .events .eflag {
   position: absolute; transform: translateY(-50%);
   background: #fff; border: 1px solid var(--event); color: var(--event);
