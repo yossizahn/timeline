@@ -16,7 +16,7 @@
   --land-edge: #cdc4ab;
 
   --px-year: 2.6px;     /* vertical scale */
-  --start-year: 680;
+  --start-year: 1;
   --end-year: 2000;
   --axis-w: 64px;       /* year-axis gutter (right) */
   --evt-gutter: 250px;  /* events rail (left) */

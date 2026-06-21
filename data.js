@@ -6,6 +6,8 @@
 // `w` = Hebrew Wikipedia article title (used to build a he.wikipedia.org link).
 
 const ERAS = {
+  tannaim:   { he: "תנאים",   en: "Tannaim",   color: "#be123c" },
+  amoraim:   { he: "אמוראים", en: "Amoraim",   color: "#7c3aed" },
   geonim:    { he: "גאונים",  en: "Geonim",    color: "#b45309" },
   rishonim:  { he: "ראשונים", en: "Rishonim",  color: "#1d4ed8" },
   acharonim: { he: "אחרונים", en: "Acharonim", color: "#047857" },
@@ -37,6 +39,112 @@ const MIGRATION = [
 
 // Each figure: born/died in CE. `circa` flags approximate dates.
 const FIGURES = [
+  // ---------- TANNAIM (Mishnah era) ----------
+  {
+    era: "tannaim", he: "רבן יוחנן בן זכאי", en: "Rabban Yochanan ben Zakkai",
+    born: 1, died: 90, circa: true, region: "eretzIsrael", place: "יבנה, ארץ ישראל",
+    w: "רבן יוחנן בן זכאי", note: "ייסד את ישיבת יבנה לאחר החורבן והציל את התורה — 'תן לי יבנה וחכמיה'.",
+    books: [],
+  },
+  {
+    era: "tannaim", he: "רבן גמליאל דיבנה", en: "Rabban Gamliel of Yavne",
+    born: 50, died: 120, circa: true, region: "eretzIsrael", place: "יבנה, ארץ ישראל",
+    w: "רבן גמליאל דיבנה", note: "נשיא הסנהדרין ביבנה; ביסס את מרכז התורה לאחר החורבן.",
+    books: [],
+  },
+  {
+    era: "tannaim", he: "רבי עקיבא", en: "Rabbi Akiva",
+    born: 50, died: 135, circa: true, region: "eretzIsrael", place: "בני ברק, ארץ ישראל",
+    w: "רבי עקיבא", note: "מגדולי התנאים; סידר את ההלכה. נהרג על קידוש השם בימי אדריאנוס.",
+    books: [],
+  },
+  {
+    era: "tannaim", he: "רבי ישמעאל", en: "Rabbi Yishmael",
+    born: 90, died: 135, circa: true, region: "eretzIsrael", place: "ארץ ישראל",
+    w: "רבי ישמעאל", note: "בר הפלוגתא של ר' עקיבא; שלוש עשרה המידות שהתורה נדרשת בהן.",
+    books: [],
+  },
+  {
+    era: "tannaim", he: "רבי מאיר", en: "Rabbi Meir",
+    born: 110, died: 170, circa: true, region: "eretzIsrael", place: "ארץ ישראל",
+    w: "רבי מאיר", note: "מתלמידי ר' עקיבא; 'סתם משנה ר' מאיר'.",
+    books: [],
+  },
+  {
+    era: "tannaim", he: "רבי שמעון בר יוחאי (רשב\"י)", en: "Rabbi Shimon bar Yochai",
+    born: 100, died: 160, circa: true, region: "eretzIsrael", place: "מירון, ארץ ישראל",
+    w: "רבי שמעון בר יוחאי", note: "מתלמידי ר' עקיבא; על פי המסורת מחבר ספר הזוהר.",
+    books: [],
+  },
+  {
+    era: "tannaim", he: "רבי יהודה הנשיא (רבי)", en: "Rabbi Yehuda HaNasi",
+    born: 135, died: 217, circa: true, region: "eretzIsrael", place: "בית שערים → ציפורי",
+    w: "רבי יהודה הנשיא", note: "עורך המשנה — חתימת התורה שבעל פה הראשונה.",
+    books: [{ y: 200, he: "משנה", en: "Mishnah" }],
+  },
+
+  // ---------- AMORAIM (Talmud era) ----------
+  {
+    era: "amoraim", he: "רב (אבא אריכא)", en: "Rav (Abba Arika)",
+    born: 175, died: 247, circa: true, region: "bavel", place: "סורא, בבל",
+    w: "רב (אמורא)", note: "ייסד את ישיבת סורא; מראשוני האמוראים בבבל.",
+    books: [],
+  },
+  {
+    era: "amoraim", he: "שמואל", en: "Shmuel",
+    born: 165, died: 254, circa: true, region: "bavel", place: "נהרדעא, בבל",
+    w: "שמואל (אמורא)", note: "ראש ישיבת נהרדעא; 'דינא דמלכותא דינא'.",
+    books: [],
+  },
+  {
+    era: "amoraim", he: "רבי יוחנן", en: "Rabbi Yochanan",
+    born: 180, died: 279, circa: true, region: "eretzIsrael", place: "טבריה, ארץ ישראל",
+    w: "רבי יוחנן", note: "מנהיג חכמי ארץ ישראל; יסוד התלמוד הירושלמי.",
+    books: [],
+  },
+  {
+    era: "amoraim", he: "ריש לקיש", en: "Reish Lakish",
+    born: 200, died: 275, circa: true, region: "eretzIsrael", place: "טבריה, ארץ ישראל",
+    w: "ריש לקיש", note: "בר הפלוגתא והגיס של ר' יוחנן.",
+    books: [],
+  },
+  {
+    era: "amoraim", he: "רב הונא", en: "Rav Huna",
+    born: 216, died: 296, circa: true, region: "bavel", place: "סורא, בבל",
+    w: "רב הונא", note: "ראש ישיבת סורא לאחר רב; הנהיג את יהדות בבל.",
+    books: [],
+  },
+  {
+    era: "amoraim", he: "רבה (בר נחמני)", en: "Rabbah bar Nachmani",
+    born: 270, died: 330, circa: true, region: "bavel", place: "פומבדיתא, בבל",
+    w: "רבה בר נחמני", note: "ראש ישיבת פומבדיתא; 'עוקר הרים'.",
+    books: [],
+  },
+  {
+    era: "amoraim", he: "אביי", en: "Abaye",
+    born: 280, died: 337, circa: true, region: "bavel", place: "פומבדיתא, בבל",
+    w: "אביי", note: "ראש ישיבת פומבדיתא; 'הוויות דאביי ורבא'.",
+    books: [],
+  },
+  {
+    era: "amoraim", he: "רבא", en: "Rava",
+    born: 280, died: 352, circa: true, region: "bavel", place: "מחוזא, בבל",
+    w: "רבא", note: "ראש הישיבה במחוזא; הלכה כמותו ברוב מחלוקותיו עם אביי.",
+    books: [],
+  },
+  {
+    era: "amoraim", he: "רב אשי", en: "Rav Ashi",
+    born: 352, died: 427, circa: true, region: "bavel", place: "מתא מחסיא (סורא), בבל",
+    w: "רב אשי", note: "החל בעריכת התלמוד הבבלי בישיבת סורא.",
+    books: [],
+  },
+  {
+    era: "amoraim", he: "רבינא", en: "Ravina",
+    born: 420, died: 499, circa: true, region: "bavel", place: "סורא, בבל",
+    w: "רבינא", note: "מחותמי התלמוד הבבלי — 'רב אשי ורבינא סוף הוראה'.",
+    books: [],
+  },
+
   // ---------- GEONIM ----------
   {
     era: "geonim", he: "רב יהודאי גאון", en: "Rav Yehudai Gaon",
@@ -377,6 +485,17 @@ const FIGURES = [
 // j: true     → inner-Jewish history (not chiefly a world event)
 // shift: true → a step in the migration of the Torah center from Bavel westward
 const EVENTS = [
+  { y: 70,   he: "חורבן בית שני", en: "Destruction of the Second Temple; Siege of Jerusalem", place: "ירושלים", w: "חורבן בית שני", j: true },
+  { y: 73,   he: "נפילת מצדה", en: "Siege of Masada", place: "מצדה", w: "מצדה", j: true },
+  { y: 132,  he: "מרד בר כוכבא", en: "Bar Kokhba revolt (132–135)", place: "ארץ ישראל", w: "מרד בר כוכבא", j: true },
+  { y: 135,  he: "עשרת הרוגי מלכות; גזירות אדריאנוס", en: "Ten Martyrs; Hadrianic persecutions", place: "ארץ ישראל", w: "עשרת הרוגי מלכות", j: true },
+  { y: 313,  he: "צו מילאנו — חופש דת לנצרות", en: "Edict of Milan", place: "האימפריה הרומית", w: "צו מילאנו" },
+  { y: 325,  he: "ועידת ניקיאה", en: "First Council of Nicaea", place: "ניקיאה", w: "ועידת ניקיאה" },
+  { y: 359,  he: "קביעת לוח השנה (הלל נשיאה)", en: "Hillel II fixes the Hebrew calendar", place: "ארץ ישראל", w: "הלל נשיאה", j: true },
+  { y: 400,  he: "חתימת התלמוד הירושלמי", en: "Jerusalem Talmud redacted", place: "טבריה, ארץ ישראל", w: "תלמוד ירושלמי", j: true },
+  { y: 476,  he: "נפילת האימפריה הרומית המערבית", en: "Fall of the Western Roman Empire", place: "רומא", w: "שקיעת האימפריה הרומית" },
+  { y: 500,  he: "חתימת התלמוד הבבלי", en: "Babylonian Talmud sealed", place: "בבל", w: "תלמוד בבלי", j: true },
+  { y: 550,  he: "תקופת הסבוראים", en: "The Savoraim", place: "בבל", w: "סבוראים", j: true },
   { y: 711,  he: "הכיבוש המוסלמי של ספרד", en: "Muslim conquest of Spain", place: "חצי האי האיברי", w: "הכיבוש המוסלמי של ספרד" },
   { y: 767,  he: "ראשית הקראות (ענן בן דוד)", en: "Anan ben David; Karaite schism", place: "בבל", w: "ענן בן דוד", j: true },
   { y: 800,  he: "קרל הגדול מוכתר לקיסר", en: "Charlemagne crowned Emperor", place: "אקס לה שאפל", w: "קרל הגדול" },
