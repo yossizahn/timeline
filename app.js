@@ -397,6 +397,51 @@ document.getElementById("region-reset").addEventListener("click", () => { selReg
 document.getElementById("map-toggle").addEventListener("click", () =>
   document.getElementById("map-panel").classList.toggle("collapsed"));
 
+// ---- draggable map panel (grab the header to move it out of the way) ----
+(function makeMapDraggable() {
+  const panel = document.getElementById("map-panel");
+  const head = document.getElementById("map-head") || panel.querySelector(".map-head");
+  if (!panel || !head) return;
+  let dragging = false, dx = 0, dy = 0, moved = false;
+
+  function place(left, top) {
+    // clamp inside the viewport so it can't be lost off-screen
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    left = Math.max(0, Math.min(left, window.innerWidth - w));
+    top = Math.max(0, Math.min(top, window.innerHeight - h));
+    panel.style.left = left + "px";
+    panel.style.top = top + "px";
+    panel.style.right = "auto";
+    panel.style.bottom = "auto";
+  }
+
+  head.addEventListener("pointerdown", e => {
+    if (e.target.closest(".map-toggle")) return; // let the collapse button work
+    const r = panel.getBoundingClientRect();
+    dragging = true; moved = false;
+    dx = e.clientX - r.left; dy = e.clientY - r.top;
+    place(r.left, r.top); // pin current position before moving
+    head.setPointerCapture(e.pointerId);
+    head.classList.add("dragging");
+    e.preventDefault();
+  });
+
+  head.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    moved = true;
+    place(e.clientX - dx, e.clientY - dy);
+  });
+
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    head.classList.remove("dragging");
+    try { head.releasePointerCapture(e.pointerId); } catch (_) {}
+  }
+  head.addEventListener("pointerup", endDrag);
+  head.addEventListener("pointercancel", endDrag);
+})();
+
 function setMode(m) {
   mode = m;
   document.getElementById("btn-heb").classList.toggle("active", m === "heb");

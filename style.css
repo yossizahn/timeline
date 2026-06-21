@@ -219,7 +219,9 @@ body { display: flex; flex-direction: column; height: 100vh; }
 .map-head {
   display: flex; align-items: center; justify-content: space-between;
   padding: 7px 12px; border-bottom: 1px solid var(--line); background: var(--bg);
+  cursor: move; touch-action: none; user-select: none;
 }
+.map-head.dragging { cursor: move; }
 .map-title { font-family: "Rubik", sans-serif; font-weight: 700; font-size: 13.5px; }
 .map-toggle {
   border: 0; background: transparent; cursor: pointer; color: var(--muted);
