@@ -224,6 +224,12 @@ const FIGURES = [
     books: [{ y: 1080, he: "ספר ההלכות (הרי\"ף)", en: "Sefer ha-Halachot" }],
   },
   {
+    era: "rishonim", he: "ר\"י מיגאש", en: "Ri Migash (Joseph ibn Migash)",
+    born: 1077, died: 1141, region: "sefarad", place: "לוסנה, ספרד",
+    w: "ר\"י מיגאש", note: "יורש הרי\"ף בראשות ישיבת לוסנה; רבו של אבי הרמב\"ם וחוליה אל הרמב\"ם.",
+    books: [{ y: 1130, he: "חידושי הר\"י מיגאש", en: "Talmudic novellae & responsa" }],
+  },
+  {
     era: "rishonim", he: "רש\"י", en: "Rashi (Shlomo Yitzchaki)",
     born: 1040, died: 1105, region: "tzarfat", place: "טרואה, צרפת",
     w: "רש\"י", note: "הפרשן הגדול ביותר על התנ\"ך והתלמוד.",
