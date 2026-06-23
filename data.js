@@ -73,7 +73,7 @@ const FIGURES = [
     books: [],
   },
   {
-    era: "tannaim", he: "רבי יהושע בן חנניה", en: "Rabbi Yehoshua ben Chananya",
+    era: "tannaim", he: "רבי יהושע (בן חנניה)", en: "Rabbi Yehoshua (ben Chananya)",
     born: 40, died: 130, circa: true, region: "eretzIsrael", place: "פקיעין, ארץ ישראל",
     w: "רבי יהושע בן חנניה", note: "מתלמידי רבן יוחנן בן זכאי; לוי וחכם, חברו של ר' אליעזר.",
     books: [],
