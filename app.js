@@ -19,7 +19,7 @@ let lang = savedLang === "en" || savedLang === "he" ? savedLang : prefersEn ? "e
 // follows the language (Hebrew → Hebrew years, English → Common Era).
 const savedMode = localStorage.getItem("yearMode");
 let mode = savedMode === "heb" || savedMode === "sec" ? savedMode : lang === "he" ? "heb" : "sec";
-let selRegion = null;    // active region filter, or null
+const selRegions = new Set(); // active region (country) filters; empty = show all
 
 // ---------- UI strings (RTL Hebrew / LTR English) ----------
 const I18N = {
@@ -50,6 +50,9 @@ const I18N = {
     centerMove: "מעבר מרכז התורה",
     wikiGo: "↗ ויקיפדיה — לחצו לפתיחה",
     aboutBtn: "אודות",
+    search: "חיפוש חכם…",
+    legendCap: "תקופות",
+    regionsWord: "אזורים",
     aboutTitle: "אודות הפרויקט",
     aboutClose: "סגור",
     aboutBody:
@@ -90,6 +93,9 @@ const I18N = {
     centerMove: "Torah center moves",
     wikiGo: "↗ Wikipedia — click to open",
     aboutBtn: "About",
+    search: "Search a sage…",
+    legendCap: "Eras",
+    regionsWord: "regions",
     aboutTitle: "About this project",
     aboutClose: "Close",
     aboutBody:
@@ -130,7 +136,8 @@ const enUrl = (heTitle, term) => WIKI_EN[heTitle]
   : "https://" + wikiHost("en") + "/w/index.php?search=" + encodeURIComponent(term) + "&go=Go";
 
 const y = (year) => (year - START) * PX;     // CE year -> vertical px
-const totalH = y(END);
+// cover late figures (some die after END) so their bars aren't clipped
+const totalH = y(Math.max(END, ...FIGURES.map((f) => f.died)));
 
 // ---------- Hebrew year as gematria (e.g. 5300 -> ה'ש') ----------
 function gematria(num) {
@@ -173,8 +180,13 @@ function packLanes(items) {
   return { items: sorted, laneCount: Math.max(laneEnds.length, 1) };
 }
 
-const layout = packLanes(FIGURES);
-const FIELD_W = layout.laneCount * LANE_W;
+// Era focus: when set, only that era's figures render, re-packed on their own —
+// which collapses the ~36-lane wall (all eras at once) down to the handful of
+// columns a single era needs. null = show every era together.
+let focusEra = null;
+
+// stable id per figure so search can locate a bar across re-renders
+FIGURES.forEach((f, i) => { f._idx = i; });
 
 // ---------- tooltip ----------
 const tip = document.getElementById("tooltip");
@@ -282,6 +294,14 @@ function buildCols() {
   const cols = document.getElementById("cols");
   cols.innerHTML = `<div class="axis-col"></div>`;
 
+  // pack the current view: era focus and country filters both hide non-matches
+  // entirely (not dim), so the field re-packs into far fewer lanes.
+  let items = FIGURES;
+  if (focusEra) items = items.filter((f) => f.era === focusEra);
+  if (selRegions.size) items = items.filter((f) => selRegions.has(f.region));
+  const layout = packLanes(items);
+  const FIELD_W = layout.laneCount * LANE_W;
+
   const field = document.createElement("div");
   field.className = "field";
   field.style.width = FIELD_W + "px";
@@ -295,6 +315,7 @@ function buildCols() {
     const bar = document.createElement("div");
     bar.className = "bar" + (f.circa ? " circa" : "");
     bar.dataset.region = f.region;
+    bar.dataset.fig = f._idx;
     bar.style.setProperty("--c", ERAS[f.era].color);
     bar.style.top = top + "px";
     bar.style.height = h + "px";
@@ -334,33 +355,137 @@ function buildCols() {
 
   cols.appendChild(field);
   document.getElementById("canvas").style.height = totalH + "px";
-  applyRegion(); // keep any active filter after a re-render
+  syncRegionUI(); // keep map markers + reset chip in sync after a re-render
 }
 
-// ---------- geographic filter ----------
-function toggleRegion(key) {
-  selRegion = selRegion === key ? null : key;
-  applyRegion();
+// ---------- name search (autocomplete) ----------
+// Type to get a dropdown of matching sages; pick one to scroll to its bar and
+// briefly highlight it. No dimming of the rest — just a guided jump.
+const searchBox = document.getElementById("search");
+const searchMenu = document.createElement("div");
+searchMenu.className = "search-menu";
+searchMenu.setAttribute("role", "listbox");
+searchMenu.hidden = true;
+searchBox.parentElement.appendChild(searchMenu);
+let searchMatches = [];
+let searchActive = -1;
+
+function buildMatches(raw) {
+  const q = raw.trim().toLowerCase();
+  if (!q) return [];
+  const out = [];
+  for (const f of FIGURES) {
+    const pos = `${f.he} ${f.en}`.toLowerCase().indexOf(q);
+    if (pos !== -1) out.push({ f, pos });
+  }
+  // earlier matches (start of name) first, then chronological
+  out.sort((a, b) => a.pos - b.pos || a.f.born - b.f.born);
+  return out.slice(0, 8);
 }
-function applyRegion() {
+
+function renderMenu() {
+  if (!searchMatches.length) { searchMenu.hidden = true; searchMenu.innerHTML = ""; return; }
+  searchMenu.innerHTML = searchMatches.map(({ f }, i) =>
+    `<button type="button" class="search-opt${i === searchActive ? " active" : ""}" data-i="${i}" role="option">` +
+    `<span class="so-dot" style="background:${ERAS[f.era].color}"></span>` +
+    `<span class="so-name">${isRTL() ? f.he : f.en}</span>` +
+    `<span class="so-yrs">${fmtRange(f.born, f.died)}</span></button>`
+  ).join("");
+  searchMenu.hidden = false;
+}
+
+function clearHighlight() {
+  document.querySelectorAll(".bar.search-hit").forEach((b) =>
+    b.classList.remove("search-hit", "pulse"));
+}
+
+function chooseMatch(i) {
+  const m = searchMatches[i];
+  if (!m) return;
+  // a match may be hidden by an active era focus or country filter — drop
+  // whichever would hide it so the jump always lands on a real bar
+  const hiddenByEra = focusEra && m.f.era !== focusEra;
+  const hiddenByRegion = selRegions.size && !selRegions.has(m.f.region);
+  if (hiddenByEra) focusEra = null;
+  if (hiddenByRegion) selRegions.clear();
+  if (hiddenByEra || hiddenByRegion) { buildCols(); syncLegend(); }
+  const bar = document.querySelector(`.bar[data-fig="${m.f._idx}"]`);
+  if (bar) {
+    // bring it into view on BOTH axes — a far-lane bar would be off-screen
+    // horizontally if we only scrolled vertically (scrollIntoView also gets RTL right)
+    bar.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+    clearHighlight();
+    bar.classList.add("search-hit");
+    void bar.offsetWidth;        // restart the pulse animation
+    bar.classList.add("pulse");
+  }
+  searchBox.value = isRTL() ? m.f.he : m.f.en;
+  closeMenu();
+}
+
+function closeMenu() { searchMenu.hidden = true; searchActive = -1; }
+
+searchBox.addEventListener("input", () => {
+  if (!searchBox.value.trim()) clearHighlight();
+  searchMatches = buildMatches(searchBox.value);
+  searchActive = searchMatches.length ? 0 : -1;
+  renderMenu();
+});
+searchBox.addEventListener("keydown", (e) => {
+  if (searchMenu.hidden || !searchMatches.length) return;
+  if (e.key === "ArrowDown") { e.preventDefault(); searchActive = (searchActive + 1) % searchMatches.length; renderMenu(); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); searchActive = (searchActive - 1 + searchMatches.length) % searchMatches.length; renderMenu(); }
+  else if (e.key === "Enter") { e.preventDefault(); chooseMatch(searchActive); }
+  else if (e.key === "Escape") { closeMenu(); }
+});
+// mousedown (before the input's blur) so the pick registers
+searchMenu.addEventListener("mousedown", (e) => {
+  const opt = e.target.closest(".search-opt");
+  if (opt) { e.preventDefault(); chooseMatch(+opt.dataset.i); }
+});
+searchBox.addEventListener("blur", () => setTimeout(closeMenu, 120));
+
+// ---------- geographic filter (multi-select; hides non-matches like era focus) ----------
+function toggleRegion(key) {
+  if (selRegions.has(key)) selRegions.delete(key);
+  else selRegions.add(key);
+  buildCols();      // re-pack so only the chosen countries show; syncRegionUI runs inside
+  scrollToFirstVisible(); // jump to the earliest matching figure, not an empty stretch
+}
+// after a region filter, scroll to the topmost (earliest-born) bar still showing,
+// so the view lands on a person rather than blank time before the first match.
+function scrollToFirstVisible() {
+  if (!selRegions.size) return;
+  let topY = Infinity;
   document.querySelectorAll(".bar").forEach((b) => {
-    b.classList.toggle("dim", selRegion !== null && b.dataset.region !== selRegion);
+    topY = Math.min(topY, parseFloat(b.style.top));
   });
-  // sync the map markers
+  if (topY !== Infinity) chartWrap.scrollTop = Math.max(0, topY - 24);
+}
+function clearRegions() {
+  if (!selRegions.size) return;
+  selRegions.clear();
+  buildCols();
+}
+function syncRegionUI() {
+  const any = selRegions.size > 0;
+  // map markers: selected ones grow + stay lit, the rest fade while a filter is on
   document.querySelectorAll("#map-dots .mdot").forEach((el) => {
-    const isSel = selRegion === el.dataset.region;
+    const isSel = selRegions.has(el.dataset.region);
     el.classList.toggle("active", isSel);
-    el.classList.toggle("dim", selRegion !== null && !isSel);
+    el.classList.toggle("dim", any && !isSel);
     el.querySelector("circle").setAttribute("r", isSel ? 9 : 6);
   });
+  // reset chip lists the active countries (≤2 by name, else a count) and clears all
   const btn = document.getElementById("region-reset");
-  if (selRegion) {
-    const r = REGIONS[selRegion];
-    btn.hidden = false;
-    btn.innerHTML = `<i style="background:${r.color}"></i>${isRTL() ? r.he : r.en}<span class="x">✕</span>`;
-  } else {
-    btn.hidden = true;
-  }
+  if (!any) { btn.hidden = true; return; }
+  btn.hidden = false;
+  const keys = [...selRegions];
+  const dots = keys.map((k) => `<i style="background:${REGIONS[k].color}"></i>`).join("");
+  const label = keys.length <= 2
+    ? keys.map((k) => isRTL() ? REGIONS[k].he : REGIONS[k].en).join(" · ")
+    : `${keys.length} ${t("regionsWord")}`;
+  btn.innerHTML = `${dots}${label}<span class="x">✕</span>`;
 }
 
 // ---------- world map ----------
@@ -504,9 +629,34 @@ function buildEvents() {
 }
 
 function buildLegend() {
-  document.getElementById("legend").innerHTML = Object.values(ERAS).map((e) =>
-    `<span class="item"><span class="dot" style="background:${e.color}"></span>${isRTL() ? e.he : e.en}</span>`
+  const legend = document.getElementById("legend");
+  legend.innerHTML = Object.entries(ERAS).map(([key, e]) =>
+    `<button class="item" data-era="${key}" type="button" aria-pressed="false">` +
+    `<span class="dot" style="background:${e.color}"></span>${isRTL() ? e.he : e.en}</button>`
   ).join("");
+  legend.querySelectorAll(".item").forEach((el) =>
+    el.addEventListener("click", () => setFocusEra(el.dataset.era)));
+  syncLegend();
+}
+
+// click an era to study it alone (others collapse away); click it again to
+// bring everyone back. Re-packs into far fewer lanes, then scrolls to the era.
+function setFocusEra(key) {
+  focusEra = focusEra === key ? null : key;
+  buildCols();
+  syncLegend();
+  if (focusEra) {
+    const first = document.querySelector(".bar");
+    if (first) chartWrap.scrollTop = Math.max(0, parseFloat(first.style.top) - 24);
+  }
+}
+function syncLegend() {
+  document.querySelectorAll("#legend .item").forEach((el) => {
+    const on = el.dataset.era === focusEra;
+    el.classList.toggle("on", on);
+    el.classList.toggle("off", focusEra !== null && !on);
+    el.setAttribute("aria-pressed", on ? "true" : "false");
+  });
 }
 
 function renderAll() { buildGrid(); buildCols(); buildEvents(); syncRail(); }
@@ -581,7 +731,7 @@ document.getElementById("btn-sec").addEventListener("click", () => setMode("sec"
 document.getElementById("btn-lang-he").addEventListener("click", () => setLang("he"));
 document.getElementById("btn-lang-en").addEventListener("click", () => setLang("en"));
 document.getElementById("show-events").addEventListener("change", renderAll);
-document.getElementById("region-reset").addEventListener("click", () => { selRegion = null; applyRegion(); });
+document.getElementById("region-reset").addEventListener("click", clearRegions);
 document.getElementById("map-toggle").addEventListener("click", () =>
   document.getElementById("map-panel").classList.toggle("collapsed"));
 
@@ -676,6 +826,9 @@ function applyLang() {
   setTitle("d-open", t("dOpen"));
   setTitle("d-close", t("dClose"));
   setText("about-btn", t("aboutBtn"));
+  setText("legend-cap", t("legendCap"));
+  const sb = document.getElementById("search");
+  if (sb) { sb.placeholder = t("search"); sb.setAttribute("aria-label", t("search")); }
   setText("about-title", t("aboutTitle"));
   setTitle("about-close", t("aboutClose"));
   const acl = document.getElementById("about-close"); if (acl) acl.setAttribute("aria-label", t("aboutClose"));

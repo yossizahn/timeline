@@ -51,12 +51,21 @@ html, body {
 }
 body { display: flex; flex-direction: column; height: 100vh; }
 
-/* ---------- Top bar ---------- */
+/* ---------- Top bar ----------
+   Two deliberate rows, each filled on both ends so the title row is never left
+   empty: row 1 = identity (title) + view controls (language, year, events,
+   about); row 2 = the era key (which doubles as the period filter) + name
+   search. Everything stays visible — nothing hides behind a menu. The region
+   filter floats over the chart (see .region-reset), so toggling it never
+   reflows this bar. */
 .topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 24px; flex-wrap: wrap;
+  display: flex; flex-direction: column; gap: 12px;
   padding: 12px 22px;
   background: var(--panel); border-bottom: 1px solid var(--line);
+}
+.topbar-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px 24px; flex-wrap: wrap;
 }
 .title-block h1 {
   margin: 0; font-family: "Rubik", sans-serif; font-weight: 700;
@@ -64,7 +73,17 @@ body { display: flex; flex-direction: column; height: 100vh; }
 }
 .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13.5px; }
 
-.controls { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+/* view settings cluster, anchored to the bar's end edge */
+.view-controls {
+  display: flex; align-items: center; gap: 16px;
+  flex-wrap: wrap; justify-content: flex-end;
+}
+
+/* second row: era key on the start edge, search on the end edge */
+.legend-block { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-width: 0; }
+.legend-cap {
+  flex: 0 0 auto; font-size: 12.5px; font-weight: 700; color: var(--muted);
+}
 .toggle { display: inline-flex; background: #ece6da; border-radius: 999px; padding: 3px; }
 .seg {
   border: 0; background: transparent; cursor: pointer;
@@ -72,9 +91,51 @@ body { display: flex; flex-direction: column; height: 100vh; }
   color: var(--muted); padding: 7px 16px; border-radius: 999px; transition: all .15s ease;
 }
 .seg.active { background: var(--ink); color: #fbfaf6; }
-.legend { display: flex; gap: 14px; }
-.legend .item { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 500; }
-.legend .dot { width: 12px; height: 12px; border-radius: 4px; }
+/* name search — type to dim non-matches and jump to the first hit */
+.search-wrap { position: relative; display: inline-flex; }
+.search-box {
+  font-family: inherit; font-size: 13.5px; color: var(--ink);
+  width: 150px; padding: 7px 13px; border-radius: 999px;
+  border: 1px solid var(--line); background: #fff;
+  transition: width .16s ease, border-color .14s ease;
+}
+.search-box:focus { outline: none; border-color: var(--axis); width: 188px; }
+.search-box::placeholder { color: var(--muted); }
+
+.search-menu {
+  position: absolute; top: calc(100% + 6px);
+  inset-inline-start: auto; inset-inline-end: 0;   /* anchor to the box edge, grow inward */
+  z-index: 40; width: 264px; max-width: calc(100vw - 24px);
+  max-height: 326px; overflow-y: auto;
+  background: #fff; border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.18); padding: 5px;
+}
+.search-menu[hidden] { display: none; }
+.search-opt {
+  display: flex; align-items: center; gap: 9px; width: 100%;
+  font-family: inherit; font-size: 13.5px; color: var(--ink); text-align: start;
+  background: transparent; border: 0; border-radius: 8px; cursor: pointer; padding: 7px 9px;
+}
+.search-opt:hover, .search-opt.active { background: #ece6da; }
+.search-opt .so-dot { width: 9px; height: 9px; border-radius: 3px; flex: 0 0 auto; }
+.search-opt .so-name {
+  flex: 1 1 auto; min-width: 0; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.search-opt .so-yrs { flex: 0 0 auto; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.legend { display: flex; gap: 8px; flex-wrap: wrap; }
+.legend .item {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ink);
+  border: 1px solid transparent; background: transparent; cursor: pointer;
+  padding: 4px 10px; border-radius: 999px; transition: all .14s ease;
+}
+.legend .item:hover { background: #ece6da; }
+.legend .item.on { background: var(--ink); color: #fbfaf6; }
+.legend .item.off { opacity: .4; }
+.legend .item.off:hover { opacity: .7; }
+.legend .dot { width: 12px; height: 12px; border-radius: 4px; flex: 0 0 auto; }
 /* events toggle — a clear on/off switch (purple = on, matching the event colour) */
 .evt-toggle {
   display: inline-flex; align-items: center; gap: 9px;
@@ -100,22 +161,34 @@ body { display: flex; flex-direction: column; height: 100vh; }
   outline: 2px solid var(--event); outline-offset: 2px;
 }
 
+/* active region filter — a floating chip over the chart (NOT in the topbar, so
+   selecting/clearing regions never reflows the bar). Centred at the top edge,
+   clear of the events rail (left) and the year axis (right). */
 .region-reset {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 12;
   display: inline-flex; align-items: center; gap: 8px;
-  border: 1px solid var(--line); background: #fff; color: var(--ink);
+  border: 1px solid var(--shift); color: var(--ink);
+  background: color-mix(in srgb, var(--shift) 8%, #fff);
   font-family: inherit; font-size: 13px; font-weight: 600;
-  padding: 6px 13px; border-radius: 999px; cursor: pointer;
+  padding: 7px 14px; border-radius: 999px; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,.16);
 }
-.region-reset i { width: 9px; height: 9px; border-radius: 50%; }
-.region-reset .x { color: var(--muted); font-weight: 700; }
-.region-reset:hover { background: #f1ece1; }
+.region-reset i { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+.region-reset .x {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; margin-inline-start: 2px; border-radius: 50%;
+  color: var(--muted); font-weight: 700; font-size: 11px;
+}
+.region-reset:hover { background: color-mix(in srgb, var(--shift) 15%, #fff); }
+.region-reset:hover .x { background: rgba(0,0,0,.08); color: var(--ink); }
 .region-reset[hidden] { display: none; }
 
 /* ---------- Chart ---------- */
 /* chart-area is a row: the scroller on the right (RTL start), the events
    sidebar pinned on the physical left. The sidebar lives OUTSIDE the scroller,
    so figures never slide under it and horizontal scroll can't grow the page. */
-.chart-area { flex: 1; display: flex; flex-direction: row; min-height: 0; overflow: hidden; }
+.chart-area { flex: 1; display: flex; flex-direction: row; min-height: 0; overflow: hidden; position: relative; }
 .chart-wrap { flex: 1 1 auto; min-width: 0; overflow: auto; position: relative; }
 .chart { position: relative; }
 
@@ -229,7 +302,17 @@ body.col-resizing { cursor: col-resize; user-select: none; }
   padding: 8px 12px 7px; padding-inline-end: var(--rail-w); overflow: hidden;
   transition: box-shadow .12s ease, transform .08s ease, opacity .15s ease;
 }
-.bar.dim { opacity: .22; filter: saturate(.4); }
+/* a chosen search result: a calm ring in the era colour, with an entry pulse */
+.bar.search-hit {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 65%, #fff), 0 6px 18px rgba(0,0,0,.16);
+  z-index: 6;
+}
+.bar.search-hit.pulse { animation: barpulse 1.5s ease-out 1; }
+@keyframes barpulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 55%, transparent), 0 6px 18px rgba(0,0,0,.16); }
+  70%  { box-shadow: 0 0 0 12px transparent, 0 6px 18px rgba(0,0,0,.16); }
+  100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 65%, #fff), 0 6px 18px rgba(0,0,0,.16); }
+}
 .bar::before { /* subtle rail divider */
   content: ""; position: absolute; top: 0; bottom: 0; inset-inline-end: var(--rail-w);
   border-inline-end: 1px solid color-mix(in srgb, var(--c) 22%, transparent);
@@ -426,10 +509,13 @@ body.col-resizing { cursor: col-resize; user-select: none; }
 @media (max-width: 640px) {
   :root { --axis-w: 50px; }
 
-  .topbar { gap: 8px 14px; padding: 9px 14px; }
+  .topbar { gap: 8px; padding: 9px 14px; }
   .title-block h1 { font-size: 18px; }
   .subtitle { display: none; }            /* the legend already names the eras */
-  .controls { gap: 9px 14px; width: 100%; }
+  .topbar-row { gap: 8px 14px; }
+  .view-controls { gap: 8px 12px; }
+  .search-box { width: 138px; }
+  .search-box:focus { width: 168px; }
 
   .toggle { padding: 2px; }
   .seg { font-size: 13px; padding: 6px 13px; }
@@ -438,9 +524,10 @@ body.col-resizing { cursor: col-resize; user-select: none; }
   .legend { flex-wrap: wrap; gap: 7px 12px; }
   .legend .item { font-size: 12.5px; }
   .legend .dot { width: 10px; height: 10px; }
+  .legend-cap { display: none; }
 
   .evt-toggle { font-size: 13px; }
-  .region-reset { font-size: 12px; padding: 5px 11px; }
+  .region-reset { font-size: 12px; padding: 6px 12px; }
 
   /* the hint talks about hovering — meaningless on touch; reclaim the space */
   .hint { display: none; }

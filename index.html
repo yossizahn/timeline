@@ -32,7 +32,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=dev10" />
 </head>
 <body>
   <div class="data-warning" id="data-warning" role="alert">
@@ -41,37 +41,48 @@
     <button type="button" class="dw-close" id="dw-close" aria-label="סגירת ההודעה">×</button>
   </div>
   <header class="topbar">
-    <div class="title-block">
-      <h1 id="app-title">ציר הזמן של חכמי ישראל</h1>
-      <p class="subtitle" id="app-subtitle">תנאים · אמוראים · גאונים · ראשונים · אחרונים — חיבוריהם ואירועי העולם</p>
+    <div class="topbar-row">
+      <div class="title-block">
+        <h1 id="app-title">ציר הזמן של חכמי ישראל</h1>
+        <p class="subtitle" id="app-subtitle">תנאים · אמוראים · גאונים · ראשונים · אחרונים — חיבוריהם ואירועי העולם</p>
+      </div>
+
+      <div class="view-controls">
+        <div class="toggle" role="group" id="lang-group" aria-label="שפת הממשק">
+          <button id="btn-lang-he" class="seg active" type="button">עברית</button>
+          <button id="btn-lang-en" class="seg" type="button">English</button>
+        </div>
+
+        <div class="toggle" role="group" id="year-group" aria-label="שנה עברית או לועזית">
+          <button id="btn-heb" class="seg active" type="button">שנה עברית</button>
+          <button id="btn-sec" class="seg" type="button">שנה לועזית</button>
+        </div>
+
+        <label class="evt-toggle">
+          <input type="checkbox" id="show-events" checked />
+          <span class="switch" aria-hidden="true"></span>
+          <span class="evt-label" id="evt-label">אירועים היסטוריים</span>
+        </label>
+
+        <button id="about-btn" class="about-btn" type="button">אודות</button>
+      </div>
     </div>
 
-    <div class="controls">
-      <div class="toggle" role="group" id="lang-group" aria-label="שפת הממשק">
-        <button id="btn-lang-he" class="seg active" type="button">עברית</button>
-        <button id="btn-lang-en" class="seg" type="button">English</button>
+    <div class="topbar-row legend-row">
+      <div class="legend-block">
+        <span class="legend-cap" id="legend-cap">תקופות</span>
+        <div class="legend" id="legend"></div>
       </div>
 
-      <div class="toggle" role="group" id="year-group" aria-label="שנה עברית או לועזית">
-        <button id="btn-heb" class="seg active" type="button">שנה עברית</button>
-        <button id="btn-sec" class="seg" type="button">שנה לועזית</button>
+      <div class="search-wrap">
+        <input id="search" class="search-box" type="search" autocomplete="off"
+               placeholder="חיפוש חכם…" aria-label="חיפוש חכם" />
       </div>
-
-      <div class="legend" id="legend"></div>
-
-      <button id="region-reset" class="region-reset" type="button" hidden></button>
-
-      <label class="evt-toggle">
-        <input type="checkbox" id="show-events" checked />
-        <span class="switch" aria-hidden="true"></span>
-        <span class="evt-label" id="evt-label">אירועים היסטוריים</span>
-      </label>
-
-      <button id="about-btn" class="about-btn" type="button">אודות</button>
     </div>
   </header>
 
   <div class="chart-area">
+    <button id="region-reset" class="region-reset" type="button" hidden></button>
     <main class="chart-wrap" id="chart-wrap">
       <div class="chart" id="chart">
         <div class="canvas" id="canvas">
@@ -136,6 +147,6 @@
 
   <script src="data.js"></script>
   <script src="map.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=dev10"></script>
 </body>
 </html>
