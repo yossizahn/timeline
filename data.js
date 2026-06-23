@@ -25,6 +25,7 @@ const REGIONS = {
   italia:        { he: "איטליה",       en: "Italy",         color: "#65a30d", mx: 112.6, my: 108.6 },
   tzfonAfrica:   { he: "צפון אפריקה",  en: "North Africa",  color: "#dc2626", mx: 101.6, my: 145.8 },
   eretzIsrael:   { he: "ארץ ישראל",    en: "Land of Israel",color: "#0891b2", mx: 216.9, my: 169.2 },
+  turkiya:       { he: "תורכיה",        en: "Turkey",        color: "#c026d3", mx: 181,   my: 129 },
   mizrachEurope: { he: "מזרח אירופה",  en: "Eastern Europe",color: "#9333ea", mx: 162.2, my: 45 },
   merkazEurope:  { he: "מרכז אירופה",  en: "Central Europe",color: "#ea580c", mx: 131.5, my: 64.8 },
   iraq:          { he: "בבל (עיראק)",  en: "Iraq",          color: "#92400e", mx: 274.9, my: 177 },
@@ -665,13 +666,13 @@ const FIGURES = [
   },
   {
     era: "acharonim", he: "כנסת הגדולה (חיים בנבנישתי)", en: "Knesset HaGedolah (Chaim Benveniste)",
-    born: 1603, died: 1673, region: "sefarad", place: "קושטא → איזמיר, תורכיה",
+    born: 1603, died: 1673, region: "turkiya", place: "קושטא → איזמיר, תורכיה",
     w: "חיים בנבנישתי", note: "מגדולי פוסקי הספרדים; אסף וסיכם את ההלכה שאחר הבית יוסף.",
     books: [{ y: 1658, he: "כנסת הגדולה", en: "Knesset HaGedolah" }],
   },
   {
     era: "acharonim", he: "שבט מוסר (אליהו הכהן האתמרי)", en: "Shevet Mussar (Eliyahu HaKohen)",
-    born: 1650, died: 1729, circa: true, region: "sefarad", place: "איזמיר, תורכיה",
+    born: 1650, died: 1729, circa: true, region: "turkiya", place: "איזמיר, תורכיה",
     w: "אליהו הכהן האתמרי", note: "דרשן ומחבר ספרי מוסר נפוצים.",
     books: [{ y: 1712, he: "שבט מוסר", en: "Shevet Mussar" }],
   },
