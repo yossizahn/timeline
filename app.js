@@ -336,8 +336,8 @@ function buildCols() {
       `<span class="region"><i style="background:${r.color}"></i>${isRTL() ? r.he : r.en}</span>`;
     bar.title = t("barOpen");
     bar.addEventListener("mousemove", (e) => showTip(figureTip(f), e));
-    bar.addEventListener("mouseenter", () => showBorders(f));
-    bar.addEventListener("mouseleave", () => { hideTip(); clearBorders(); });
+    bar.addEventListener("mouseenter", () => { showBorders(f); showPin(f); });
+    bar.addEventListener("mouseleave", () => { hideTip(); clearBorders(); hidePin(); });
     bar.addEventListener("click", () => { hideTip(); openDrawer(f.w, enTerm(f), isRTL() ? f.he : f.en); });
 
     // region chip → toggle the geographic highlight (don't open Wikipedia)
@@ -576,6 +576,31 @@ function showBorders(f) {
 function clearBorders() {
   borderToken++;
   document.getElementById("map-borders").innerHTML = "";
+}
+
+// ---------- hover pin (one sage's location) ----------
+// On figure hover, drop a pin at the sage's region on the map and hide the
+// colored region-filter dots so the single location reads clearly.
+function showPin(f) {
+  const r = REGIONS[f.region];
+  if (!r) return;
+  const x = r.mx, y = r.my;
+  const g = document.getElementById("map-pin");
+  // animate the whole group around the pin's tip (reliable across browsers)
+  g.style.transformOrigin = `${x}px ${y}px`;
+  g.innerHTML =
+    `<ellipse class="pin-shadow" cx="${x}" cy="${y}" rx="4.2" ry="1.5"/>` +
+    `<path class="pin-body" d="M${x},${y} C${x - 8.5},${y - 11} ${x - 8.5},${y - 19} ${x},${y - 21} ` +
+    `C${x + 8.5},${y - 19} ${x + 8.5},${y - 11} ${x},${y} Z" fill="${r.color}"/>` +
+    `<circle class="pin-eye" cx="${x}" cy="${y - 13}" r="3.4" fill="#fff"/>`;
+  g.style.animation = "none";
+  void g.getBoundingClientRect();        // reflow so the drop replays on every hover
+  g.style.animation = "";
+  document.getElementById("map-svg").classList.add("pinned");
+}
+function hidePin() {
+  document.getElementById("map-pin").innerHTML = "";
+  document.getElementById("map-svg").classList.remove("pinned");
 }
 
 // gutter width is user-resizable (drag handle on the rail's inner edge); persisted.

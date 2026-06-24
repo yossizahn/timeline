@@ -387,7 +387,7 @@ body.col-resizing { cursor: col-resize; user-select: none; }
 .map-title { font-family: "Rubik", sans-serif; font-weight: 700; font-size: 13.5px; }
 .map-toggle {
   border: 0; background: transparent; cursor: pointer; color: var(--muted);
-  font-size: 14px; line-height: 1; padding: 2px 4px; transition: transform .15s ease;
+  font-size: 18px; line-height: 1; padding: 2px 4px; transition: transform .15s ease;
 }
 /* in LTR, float the map bottom-right to mirror the layout */
 [dir="ltr"] .map-panel { left: auto; right: 16px; }
@@ -437,6 +437,23 @@ body.col-resizing { cursor: col-resize; user-select: none; }
 #map-dots .mlabel { opacity: 0; transition: opacity .12s ease; }
 #map-dots .mdot:hover .mlabel,
 #map-dots .mdot.active .mlabel { opacity: 1; }
+/* while a sage is hovered, hide the region-filter dots and show only the pin */
+#map-svg.pinned #map-dots { opacity: 0; pointer-events: none; }
+#map-dots { transition: opacity .12s ease; }
+#map-pin {
+  pointer-events: none;
+  animation: pin-drop .34s cubic-bezier(.18,1.4,.4,1) both;
+}
+#map-pin .pin-shadow { fill: rgba(0,0,0,.32); }
+#map-pin .pin-body {
+  stroke: #fff; stroke-width: 2; stroke-linejoin: round;
+  filter: drop-shadow(0 1.6px 2px rgba(0,0,0,.5));
+}
+@keyframes pin-drop {
+  0%   { transform: translateY(-14px) scale(.4); opacity: 0; }
+  60%  { transform: translateY(0) scale(1.12); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
 
 /* ---------- Wikipedia drawer ---------- */
 .drawer {
