@@ -383,6 +383,38 @@ searchBox.parentElement.appendChild(searchMenu);
 let searchMatches = [];
 let searchActive = -1;
 
+// recent searches, newest last — recalled with the up/down arrows when the
+// autocomplete menu isn't open (VS Code style). Persisted across sessions.
+const HIST_MAX = 30;
+let searchHistory = (() => {
+  try { const h = JSON.parse(localStorage.getItem("searchHistory")); return Array.isArray(h) ? h.slice(-HIST_MAX) : []; }
+  catch (_) { return []; }
+})();
+let histPos = 0;        // 0 = live input; N = N entries back from the newest
+let histDraft = "";     // text typed before history recall, restored on the way back
+
+function rememberSearch(term) {
+  term = (term || "").trim();
+  if (!term) return;
+  searchHistory = searchHistory.filter((h) => h !== term);   // dedupe, keep newest
+  searchHistory.push(term);
+  if (searchHistory.length > HIST_MAX) searchHistory = searchHistory.slice(-HIST_MAX);
+  try { localStorage.setItem("searchHistory", JSON.stringify(searchHistory)); } catch (_) {}
+  histPos = 0;
+}
+
+// step through history: dir +1 = older, -1 = newer (back toward the live draft)
+function recallHistory(dir) {
+  if (!searchHistory.length) return;
+  if (histPos === 0 && dir > 0) histDraft = searchBox.value;   // stash live text
+  histPos = Math.max(0, Math.min(searchHistory.length, histPos + dir));
+  searchBox.value = histPos === 0 ? histDraft : searchHistory[searchHistory.length - histPos];
+  const end = searchBox.value.length;
+  searchBox.setSelectionRange(end, end);
+  searchMatches = buildMatches(searchBox.value);   // keep Enter able to jump
+  searchActive = searchMatches.length ? 0 : -1;
+}
+
 function buildMatches(raw) {
   const q = raw.trim().toLowerCase();
   if (!q) return [];
@@ -433,23 +465,32 @@ function chooseMatch(i) {
     bar.classList.add("pulse");
   }
   searchBox.value = isRTL() ? m.f.he : m.f.en;
+  rememberSearch(searchBox.value);
   closeMenu();
 }
 
 function closeMenu() { searchMenu.hidden = true; searchActive = -1; }
 
 searchBox.addEventListener("input", () => {
+  histPos = 0;                       // typing leaves history-recall mode
   if (!searchBox.value.trim()) clearHighlight();
   searchMatches = buildMatches(searchBox.value);
   searchActive = searchMatches.length ? 0 : -1;
   renderMenu();
 });
 searchBox.addEventListener("keydown", (e) => {
-  if (searchMenu.hidden || !searchMatches.length) return;
-  if (e.key === "ArrowDown") { e.preventDefault(); searchActive = (searchActive + 1) % searchMatches.length; renderMenu(); }
-  else if (e.key === "ArrowUp") { e.preventDefault(); searchActive = (searchActive - 1 + searchMatches.length) % searchMatches.length; renderMenu(); }
-  else if (e.key === "Enter") { e.preventDefault(); chooseMatch(searchActive); }
-  else if (e.key === "Escape") { closeMenu(); }
+  // with the autocomplete menu open, the arrows move through the matches
+  if (!searchMenu.hidden && searchMatches.length) {
+    if (e.key === "ArrowDown") { e.preventDefault(); searchActive = (searchActive + 1) % searchMatches.length; renderMenu(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); searchActive = (searchActive - 1 + searchMatches.length) % searchMatches.length; renderMenu(); }
+    else if (e.key === "Enter") { e.preventDefault(); chooseMatch(searchActive); }
+    else if (e.key === "Escape") { closeMenu(); }
+    return;
+  }
+  // menu closed: the arrows recall recent searches instead
+  if (e.key === "ArrowUp") { e.preventDefault(); recallHistory(1); }
+  else if (e.key === "ArrowDown") { e.preventDefault(); recallHistory(-1); }
+  else if (e.key === "Enter") { e.preventDefault(); if (searchMatches.length) chooseMatch(searchActive < 0 ? 0 : searchActive); }
 });
 // mousedown (before the input's blur) so the pick registers
 searchMenu.addEventListener("mousedown", (e) => {
