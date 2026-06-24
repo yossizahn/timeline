@@ -170,6 +170,7 @@ const PLACES = {
   "אומן": { lon: 30.22, lat: 48.75 }, "ברסלב": { lon: 28.6, lat: 48.82 },
   "טשרנוביל": { lon: 30.06, lat: 51.27 }, "קוריץ": { lon: 27.16, lat: 50.62 },
   "רוז'ין": { lon: 29.2, lat: 49.7 }, "הורנשטייפל": { lon: 30.4, lat: 50.8 },
+  "סקולען": { lon: 27.56, lat: 47.36 }, "קרסטיר": { lon: 21.36, lat: 48.17 },
   // — England / broad Europe —
   "אנגליה": { lon: -0.13, lat: 51.5 }, "לונדון": { lon: -0.13, lat: 51.5 },
   "אירופה": { lon: 15.0, lat: 50.0 }, "הים התיכון": { lon: 18.0, lat: 35.0 },
@@ -309,6 +310,7 @@ const PLACES_EN = {
   "אומן": "Uman", "ברסלב": "Breslov",
   "טשרנוביל": "Chernobyl", "קוריץ": "Korets",
   "רוז'ין": "Ruzhin", "הורנשטייפל": "Hornostaypil",
+  "סקולען": "Sculeni", "קרסטיר": "Kerestir",
   // — England / broad Europe —
   "אנגליה": "England", "לונדון": "London",
   "אירופה": "Europe", "הים התיכון": "Mediterranean",
@@ -915,6 +917,12 @@ const FIGURES = [
     books: [{ y: 1175, he: "תוספות", en: "Tosafot (Talmudic glosses)" }],
   },
   {
+    era: "rishonim", he: "ספר יראים (אליעזר ממיץ)", en: "Sefer Yereim (Eliezer of Metz)",
+    born: 1115, died: 1198, circa: true, region: "ashkenaz", place: "מיץ, אשכנז",
+    w: "אליעזר ממיץ", note: "מבעלי התוספות, תלמיד רבנו תם; מנה את המצוות בספרו \"יראים\".",
+    books: [{ y: 1175, he: "ספר יראים", en: "Sefer Yereim" }],
+  },
+  {
     era: "rishonim", he: "בעל העיטור (יצחק בן אבא מרי)", en: "Baal HaIttur (Isaac ben Abba Mari)",
     born: 1122, died: 1193, circa: true, region: "provans", place: "מרסיי, פרובנס",
     w: "יצחק בן אבא מרי", note: "מחכמי פרובנס; ספרו ההלכתי \"העיטור\" מקור יסוד בדיני שטרות, מועדים ושחיטה.",
@@ -1187,13 +1195,19 @@ const FIGURES = [
     books: [{ y: 1500, he: "פירוש הברטנורא על המשנה", en: "Mishnah commentary" }],
   },
   {
-    era: "rishonim", he: "ספר יוחסין (ר' אברהם זכות)", en: "Abraham Zacuto (Sefer Yuchasin)",
+    era: "rishonim", he: "ספר יוחסין (אברהם זכות)", en: "Abraham Zacuto (Sefer Yuchasin)",
     born: 1452, died: 1515, circa: true, region: "sefarad", place: "סלמנקה, ספרד ← תוניס",
     w: "אברהם זכות", note: "אסטרונום, היסטוריון ופוסק מגורשי ספרד; חיבר את \"ספר יוחסין\" — כרוניקה של שלשלת מסירת התורה, ולוחות אסטרונומיים ששימשו את המגלים.",
     books: [{ y: 1504, he: "ספר יוחסין", en: "Sefer Yuchasin (chronicle)" }],
   },
 
   // ---------- ACHARONIM ----------
+  {
+    era: "acharonim", he: "ר' עובדיה ספורנו", en: "Ovadia Sforno",
+    born: 1475, died: 1550, circa: true, region: "italia", place: "בולוניה, איטליה",
+    w: "עובדיה ספורנו", note: "פרשן התורה, פילוסוף ורופא באיטליה; \"ספורנו\" נמנה עם מפרשי המקרא הקלאסיים.",
+    books: [{ y: 1537, he: "אור עמים", en: "Or Amim" }, { y: 1567, he: "ביאור ספורנו על התורה", en: "Sforno — Torah commentary" }],
+  },
   {
     era: "acharonim", he: "עין יעקב (יעקב בן חביב)", en: "Jacob ibn Habib",
     born: 1445, died: 1516, circa: true, region: "turkiya", place: "זמורה, ספרד ← סלוניקי",
@@ -1223,6 +1237,12 @@ const FIGURES = [
     born: 1480, died: 1545, circa: true, region: "eretzIsrael", place: "סלוניקי ← ירושלים",
     w: "לוי בן חביב", note: "בנו של בעל \"עין יעקב\" ורבה של ירושלים; בר-הפלוגתא של מהר\"י בירב בפולמוס חידוש הסמיכה.",
     books: [{ y: 1540, he: "שו\"ת מהרלב\"ח", en: "Responsa of the Ralbach" }],
+  },
+  {
+    era: "acharonim", he: "מהר\"ם פדובה (מאיר קצנלנבוגן)", en: "Maharam Padua (Meir Katzenellenbogen)",
+    born: 1473, died: 1565, region: "italia", place: "פראג ← פדובה",
+    w: "מאיר קצנלנבוגן", note: "מגדולי פוסקי איטליה; ראש ישיבת פדובה, קרוב משפחת הרמ\"א, ומהדיר הרמב\"ם.",
+    books: [{ y: 1553, he: "שו\"ת מהר\"ם פדובה", en: "Responsa of Maharam Padua" }],
   },
   {
     era: "acharonim", he: "בית יוסף (ר' יוסף קארו)", en: "Beit Yosef (Yosef Karo)",
@@ -1624,6 +1644,18 @@ const FIGURES = [
     books: [{ y: 1863, he: "אוהב ישראל", en: "Ohev Yisrael" }],
   },
   {
+    era: "chassidut", he: "ר' משה לייב מסאסוב", en: "Rabbi Moshe Leib of Sassov",
+    born: 1745, died: 1807, circa: true, region: "mizrachEurope", place: "סאסוב, גליציה",
+    w: "משה לייב מסאסוב", note: "מתלמידי ר' שמלקא מניקלשבורג ור' אלימלך מליז'ענסק; מייסד חסידות סאסוב, נודע באהבת ישראל ובפדיון שבויים.",
+    books: [],
+  },
+  {
+    era: "chassidut", he: "מאור ושמש (קלונימוס קלמן אפשטיין)", en: "Me'or VaShemesh (Kalonymus Kalman Epstein)",
+    born: 1751, died: 1823, circa: true, region: "mizrachEurope", place: "קרקוב, גליציה",
+    w: "קלונימוס קלמן אפשטיין", note: "מתלמידי ר' אלימלך מליז'ענסק והחוזה מלובלין; מראשי החסידות בקרקוב, נודע בשם ספרו \"מאור ושמש\" על התורה.",
+    books: [{ y: 1842, he: "מאור ושמש", en: "Me'or VaShemesh" }],
+  },
+  {
     era: "chassidut", he: "היהודי הקדוש מפשיסחה", en: "The Holy Jew of Peshischa",
     born: 1766, died: 1813, region: "mizrachEurope", place: "פשיסחה, פולין",
     w: "יעקב יצחק מפשיסחה", note: "תלמיד החוזה מלובלין; מייסד דרך פשיסחה שהדגישה עבודה פנימית ועיון.",
@@ -1726,10 +1758,22 @@ const FIGURES = [
     books: [{ y: 1902, he: "שו\"ת מנחת אלעזר", en: "Minchas Elazar (responsa)" }],
   },
   {
+    era: "chassidut", he: "ר' ישעיה'לה מקרסטיר (ישעיה שטיינר)", en: "Yeshayah Steiner (Reb Shayele of Kerestir)",
+    born: 1851, died: 1925, circa: true, region: "merkazEurope", place: "קרסטיר, הונגריה",
+    w: "ישעיה שטיינר", note: "האדמו\"ר מקרסטיר; מתלמידי הרבי מליסקא, נודע כבעל מופת ובהכנסת אורחים מופלגת — דמותו נפוצה כסגולה.",
+    books: [],
+  },
+  {
     era: "chassidut", he: "ר' יואל טייטלבוים (סאטמר)", en: "Yoel Teitelbaum (Satmar Rav)",
     born: 1887, died: 1979, region: "usa", place: "סאטמר, הונגריה ← ניו יורק",
     w: "יואל טייטלבוים", note: "מייסד חסידות סאטמר ומגדולי מנהיגיה; מחבר \"ויואל משה\".",
     books: [{ y: 1961, he: "ויואל משה / דברי יואל", en: "Vayoel Moshe; Divrei Yoel" }],
+  },
+  {
+    era: "chassidut", he: "האדמו\"ר מסקולען (אליעזר זוסיא פורטוגל)", en: "Skulener Rebbe (Eliezer Zusia Portugal)",
+    born: 1898, died: 1982, region: "usa", place: "סקולען, מולדובה ← ניו יורק",
+    w: "אליעזר זוסיא פורטוגל", note: "אדמו\"ר מסקולען; מסר נפשו בהצלת יתומים וילדים יהודים ברומניה לאחר השואה, נאסר ועלה לארה\"ב, ונודע בצדקותו ובניגוניו.",
+    books: [],
   },
   {
     era: "chassidut", he: "הרבי מליובאוויטש (מנחם מנדל שניאורסון)", en: "Lubavitcher Rebbe (Menachem Mendel Schneerson)",
@@ -2159,13 +2203,6 @@ const EVENTS = [
 // rather than hand-editing; keys are the `w` (he.wikipedia) titles. Entries
 // without an English article fall back to search in app.js.
 const WIKI_EN = {
-  "נחום איש גמזו": "Nachum Ish Gamzu",
-  "רבי נחמיה": "Rabbi Nehemiah",
-  "ברוך בן יצחק": "Baruch ben Isaac",
-  "צדקיה בן אברהם": "Zedekiah ben Abraham Anaw",
-  "יוסף חביבא": "Joseph ibn Habib",
-  "יעקב אבוחצירא": "Yaakov Abuhatzeira",
-  "באבא סאלי": "Baba Sali",
   "רבן גמליאל הזקן": "Gamaliel",
   "רבן יוחנן בן זכאי": "Yohanan ben Zakkai",
   "רבי צדוק": "Rabbi Zadok",
@@ -2257,6 +2294,7 @@ const WIKI_EN = {
   "אברהם אבן עזרא": "Abraham ibn Ezra",
   "רבנו תם": "Rabbeinu Tam",
   "ר\"י הזקן": "Isaac ben Samuel",
+  "אליעזר ממיץ": "Eliezer ben Samuel",
   "יצחק בן אבא מרי": "Isaac ben Abba Mari",
   "אברהם בן יצחק מנרבונה": "Abraham ben Isaac of Narbonne",
   "אברהם בן דוד מפושקירה": "Abraham ben David",
@@ -2302,11 +2340,13 @@ const WIKI_EN = {
   "יצחק אברבנאל": "Isaac Abarbanel",
   "עובדיה מברטנורא": "Obadiah of Bertinoro",
   "אברהם זכות": "Abraham Zacuto",
+  "עובדיה ספורנו": "Obadiah ben Jacob Sforno",
   "יעקב בן חביב": "Jacob ibn Habib",
   "אליהו מזרחי": "Elijah Mizrachi",
   "יעקב פולק": "Jacob Pollak",
   "יעקב בירב": "Jacob Berab",
   "לוי בן חביב": "Levi ibn Habib",
+  "מאיר קצנלנבוגן": "Meir Katzenellenbogen",
   "יוסף קארו": "Joseph Karo",
   "מהר\"ל": "Judah Loew ben Bezalel",
   "משה איסרליש": "Moses Isserles",
@@ -2368,6 +2408,8 @@ const WIKI_EN = {
   "יעקב קרנץ": "Jacob ben Wolf Kranz",
   "יעקב יצחק הורוביץ": "Yaakov Yitzchak of Lublin",
   "אברהם יהושע השיל מאפטא": "Avraham Yehoshua Heshel",
+  "משה לייב מסאסוב": "Moshe Leib of Sassov",
+  "קלונימוס קלמן אפשטיין": "Klonimus Kalman Epstein",
   "יעקב יצחק מפשיסחה": "Yaakov Yitzchak of Peshischa",
   "מנחם מנדל הגר (קוסוב)": "Menachem Mendel Hager of Kosov",
   "משה טייטלבוים (ישמח משה)": "Moshe Teitelbaum (Ujhel)",
@@ -2383,7 +2425,9 @@ const WIKI_EN = {
   "אברהם בורנשטיין": "Avrohom Bornsztain",
   "יהודה אריה ליב אלתר": "Yehudah Aryeh Leib Alter",
   "חיים אלעזר שפירא": "Chaim Elazar Spira",
+  "ישעיה שטיינר": "Yeshayah Steiner",
   "יואל טייטלבוים": "Joel Teitelbaum",
+  "אליעזר זוסיא פורטוגל": "Eliezer Zusia Portugal",
   "מנחם מנדל שניאורסון": "Menachem Mendel Schneerson",
   "מאיר איזנשטט": "Meir Eisenstadt",
   "יחזקאל לנדא": "Yechezkel Landau",
