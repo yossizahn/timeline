@@ -8,6 +8,7 @@
 const ERAS = {
   tannaim:   { he: "תנאים",   en: "Tannaim",   color: "#be123c" },
   amoraim:   { he: "אמוראים", en: "Amoraim",   color: "#7c3aed" },
+  savoraim:  { he: "סבוראים", en: "Savoraim",  color: "#0e7490" },
   geonim:    { he: "גאונים",  en: "Geonim",    color: "#b45309" },
   rishonim:  { he: "ראשונים", en: "Rishonim",  color: "#1d4ed8" },
   acharonim: { he: "אחרונים", en: "Acharonim", color: "#047857" },
@@ -342,11 +343,66 @@ const FIGURES = [
     books: [],
   },
 
+  {
+    era: "amoraim", he: "רבה תוספאה", en: "Rabbah Tosafa'ah",
+    born: 430, died: 494, circa: true, region: "bavel", place: "סורא, בבל",
+    w: "רבה תוספאה", note: "ראש ישיבת סורא ומאחרוני האמוראים (דור שמיני); כיהן בדור שלפני הסבוראים.",
+    books: [],
+  },
+  // ---------- SAVORAIM ----------
+  {
+    era: "savoraim", he: "רב אחאי", en: "Ahai",
+    born: 450, died: 510, circa: true, region: "bavel", place: "בבל",
+    w: "רב אחאי", note: "מראשוני הסבוראים (הדור הראשון); מן החכמים שהוסיפו ביאורים והכרעות לתלמוד הבבלי לאחר חתימתו.",
+    books: [],
+  },
+  {
+    era: "savoraim", he: "רב עינא", en: "Rav Ena",
+    born: 475, died: 540, circa: true, region: "bavel", place: "סורא, בבל",
+    w: "רב עינא (סבורא)", note: "ראש ישיבת סורא ומראשי הסבוראים (בן זוגו של רב סימונא); שותף בעריכת התלמוד הבבלי.",
+    books: [],
+  },
+  {
+    era: "savoraim", he: "רב סימונא", en: "Simuna",
+    born: 475, died: 540, circa: true, region: "bavel", place: "פומבדיתא, בבל",
+    w: "רב סימונא", note: "ראש ישיבת פומבדיתא ומראשי הסבוראים; שותף בעריכת התלמוד הבבלי.",
+    books: [],
+  },
+  {
+    era: "savoraim", he: "רב מרי בר רב דימי", en: "Mari ben R. Dimi",
+    born: 550, died: 615, circa: true, region: "bavel", place: "פירוז שבור → פומבדיתא, בבל",
+    w: "רב מרי בר רב דימי", note: "ראש ישיבת פומבדיתא בדור השלישי של הסבוראים (כ-600); המשיכו בביאור התלמוד ובהכרעת ההלכה.",
+    books: [],
+  },
+  {
+    era: "savoraim", he: "רב מר בר רב הונא", en: "Mar ben Huna",
+    born: 550, died: 617, circa: true, region: "bavel", place: "סורא, בבל",
+    w: "מר בר רב הונא", note: "מראשי הדור השלישי של הסבוראים וראש ישיבת סורא; בראשותו נפתחה סורא מחדש לאחר עשרות שנות סגירה בשל הגזירות.",
+    books: [],
+  },
   // ---------- GEONIM ----------
   {
     era: "geonim", he: "רב חנן מאישקיא", en: "Rav Chanan of Iskiya",
     born: 589, died: 609, circa: true, region: "bavel", place: "פומבדיתא, בבל",
-    w: "חנן מאישקיא", note: "ראשון גאוני פומבדיתא — ראשית תקופת הגאונים (כ-589).",
+    w: "חנן מאישקיא", note: "מאחרוני הסבוראים וראש ישיבת פומבדיתא בשלהי התקופה (כ-589); יש המונים אותו כראשון הגאונים.",
+    books: [],
+  },
+  {
+    era: "geonim", he: "רב חנינא גאון", en: "Rav Chanina Gaon",
+    born: 590, died: 640, circa: true, region: "bavel", place: "סורא, בבל",
+    w: "חנינא גאון", note: "ראש ישיבת סורא במעבר משלטון סאסאני לשלטון הערבי (כיבוש בבל); מראשוני הגאונים.",
+    books: [],
+  },
+  {
+    era: "geonim", he: "רב הונא גאון", en: "Rav Huna Gaon",
+    born: 580, died: 650, circa: true, region: "bavel", place: "סורא, בבל",
+    w: "הונא גאון", note: "מראשוני גאוני סורא; כיהן אחרי רב חנינא (כ-640–650), ולחלק מהדעות עדיין נמנה עם הסבוראים. יחד עם מקבילו בפומבדיתא תיקן את \"תקנת המורדת\".",
+    books: [],
+  },
+  {
+    era: "geonim", he: "רב ששנא גאון (משרשיא בר תחליפא)", en: "Rav Sheshna Gaon (Mesharsheya bar Tachlifa)",
+    born: 595, died: 670, circa: true, region: "bavel", place: "סורא, בבל",
+    w: "ששנא גאון", note: "ראש ישיבת סורא לאחר רב הונא; יש הרואים בו את פותח תקופת הגאונים, ויש הרואים בו את אחרון הסבוראים.",
     books: [],
   },
   {
@@ -360,6 +416,18 @@ const FIGURES = [
     born: 700, died: 761, circa: true, region: "bavel", place: "סורא, בבל",
     w: "יהודאי גאון", note: "מראשוני הגאונים שכתבו ספרי פסיקה.",
     books: [{ y: 755, he: "הלכות פסוקות", en: "Halachot Pesukot" }],
+  },
+  {
+    era: "geonim", he: "רב חנינאי כהנא בן הונא גאון", en: "Haninai Kahana ben R. Huna",
+    born: 710, died: 774, circa: true, region: "bavel", place: "סורא, בבל",
+    w: "חנינאי כהנא בן הונא גאון", note: "הגאון השלושה-עשר בשלשלת גאוני סורא (כיהן כ-769–774); כהן, ומפסקיו הובאו ב\"הלכות גדולות\".",
+    books: [],
+  },
+  {
+    era: "geonim", he: "רב נטרונאי גאון", en: "Natronai ben Hilai",
+    born: 805, died: 858, circa: true, region: "bavel", place: "סורא, בבל",
+    w: "רב נטרונאי גאון", note: "גאון סורא ומגדולי המשיבים; אלפי תשובותיו הופצו לקהילות, ובהן סדר התפילה ששלח לספרד.",
+    books: [],
   },
   {
     era: "geonim", he: "רב עמרם גאון", en: "Rav Amram Gaon",
@@ -399,6 +467,12 @@ const FIGURES = [
     born: 939, died: 1038, region: "bavel", place: "פומבדיתא, בבל",
     w: "רב האי גאון", note: "אחרון גאוני בבל הגדולים; אלפי תשובות.",
     books: [{ y: 1000, he: "ספר המקח והממכר", en: "Sefer ha-Mekach (commercial law)" }],
+  },
+  {
+    era: "geonim", he: "רב חזקיה בן דוד", en: "Hezekiah ben David",
+    born: 985, died: 1058, circa: true, region: "bavel", place: "פומבדיתא, בבל",
+    w: "חזקיה בן דוד", note: "ראש הגולה וראש ישיבת פומבדיתא האחרון; עם הירצחו (תתי\"ח) ננעלה הישיבה ותמה תקופת הגאונים בבבל.",
+    books: [],
   },
 
   // ---------- RISHONIM ----------
@@ -1584,14 +1658,23 @@ const WIKI_EN = {
   "רב אשי": "Rav Ashi",
   "מר בר רב אשי": "Mar bar Rav Ashi",
   "רבינא": "Ravina I",
+  "רבה תוספאה": "Rabbah Tosafa'ah",
+  "רב אחאי": "Ahai",
+  "רב עינא (סבורא)": "Rav Ena",
+  "רב סימונא": "Simuna",
+  "רב מרי בר רב דימי": "Mari ben R. Dimi",
+  "מר בר רב הונא": "Mar ben Huna",
   "חנן מאישקיא": "Hanan of Iskiya",
   "רב אחא משבחא": "Ahai of Shabha",
   "יהודאי גאון": "Yehudai ben Nahman",
+  "חנינאי כהנא בן הונא גאון": "Haninai Kahana ben R. Huna",
+  "רב נטרונאי גאון": "Natronai ben Hilai",
   "עמרם גאון": "Amram ben Sheshna",
   "רב סעדיה גאון": "Saadia Gaon",
   "נחמיה בן כהן צדק": "Nehemiah ben Kohen Tzedek",
   "רב שרירא גאון": "Sherira ben Hanina",
   "רב האי גאון": "Hai ben Sherira",
+  "חזקיה בן דוד": "Hezekiah ben David",
   "רבנו גרשום": "Gershom ben Judah",
   "רבנו חננאל": "Chananel ben Chushiel",
   "שמואל הנגיד": "Samuel ibn Naghrillah",
