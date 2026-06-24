@@ -63,7 +63,7 @@ const PLACES = {
   "מירון": { lon: 35.44, lat: 32.98 }, "מצדה": { lon: 35.35, lat: 31.31 },
   "בית שערים": { lon: 35.13, lat: 32.7 }, "בית שאן": { lon: 35.5, lat: 32.5 },
   "ארב": { lon: 35.32, lat: 32.92 }, "אושא": { lon: 35.1, lat: 32.8 },
-  "הגליל": { lon: 35.4, lat: 32.9 },
+  "הגליל": { lon: 35.4, lat: 32.9 }, "נתיבות": { lon: 34.59, lat: 31.42 },
   // — Babylonia / Iraq / East —
   "בבל": { lon: 44.4, lat: 32.5 }, "סורא": { lon: 44.5, lat: 31.9 },
   "פומבדיתא": { lon: 43.77, lat: 33.35 }, "נהרדעא": { lon: 44.3, lat: 33.1 },
@@ -200,7 +200,7 @@ const PLACES_EN = {
   "מירון": "Meron", "מצדה": "Masada",
   "בית שערים": "Beit She'arim", "בית שאן": "Beit She'an",
   "ארב": "Arav", "אושא": "Usha",
-  "הגליל": "Galilee",
+  "הגליל": "Galilee", "נתיבות": "Netivot",
   // — Babylonia / Iraq / East —
   "בבל": "Babylonia", "סורא": "Sura",
   "פומבדיתא": "Pumbedita", "נהרדעא": "Nehardea",
@@ -346,6 +346,12 @@ const FIGURES = [
     books: [],
   },
   {
+    era: "tannaim", he: "נחום איש גמזו", en: "Nachum Ish Gamzu",
+    born: 10, died: 90, circa: true, region: "eretzIsrael", place: "ארץ ישראל",
+    w: "נחום איש גמזו", note: "מרבותיו של ר' עקיבא; נודע במידת \"גם זו לטובה\".",
+    books: [],
+  },
+  {
     era: "tannaim", he: "רבן גמליאל דיבנה", en: "Rabban Gamliel of Yavne",
     born: 50, died: 120, circa: true, region: "eretzIsrael", place: "יבנה, ארץ ישראל",
     w: "רבן גמליאל דיבנה", note: "נשיא הסנהדרין ביבנה; ביסס את מרכז התורה לאחר החורבן.",
@@ -421,6 +427,12 @@ const FIGURES = [
     era: "tannaim", he: "רבי יהודה בר עילאי", en: "Rabbi Yehuda bar Ilai",
     born: 100, died: 170, circa: true, region: "eretzIsrael", place: "אושא, ארץ ישראל",
     w: "רבי יהודה", note: "מתלמידי ר' עקיבא; 'ראש המדברים בכל מקום'.",
+    books: [],
+  },
+  {
+    era: "tannaim", he: "רבי נחמיה", en: "Rabbi Nehemiah",
+    born: 100, died: 170, circa: true, region: "eretzIsrael", place: "ארץ ישראל",
+    w: "רבי נחמיה", note: "מתלמידי ר' עקיבא בדור הרביעי; \"סתם תוספתא ר' נחמיה\".",
     books: [],
   },
   {
@@ -945,6 +957,12 @@ const FIGURES = [
     books: [{ y: 1200, he: "ספר ראבי\"ה (אבי העזרי)", en: "Sefer Raavyah (Avi ha-Ezri)" }],
   },
   {
+    era: "rishonim", he: "בעל התרומה (ברוך בן יצחק)", en: "Baruch ben Isaac (Sefer HaTerumah)",
+    born: 1140, died: 1211, circa: true, region: "ashkenaz", place: "צרפת ← וורמייזא, אשכנז",
+    w: "ברוך בן יצחק", note: "מבעלי התוספות ותלמיד ר\"י הזקן; \"ספר התרומה\" בהלכה.",
+    books: [{ y: 1200, he: "ספר התרומה", en: "Sefer HaTerumah (halacha)" }],
+  },
+  {
     era: "rishonim", he: "רבי יהודה החסיד", en: "Yehuda HeChasid (of Regensburg)",
     born: 1150, died: 1217, circa: true, region: "ashkenaz", place: "שפיירא ← רגנסבורג, אשכנז",
     w: "יהודה החסיד", note: "מנהיג חסידי אשכנז; חיבר את \"ספר חסידים\" — מיסודות תורת המוסר והאדיקות האשכנזית.",
@@ -1009,6 +1027,12 @@ const FIGURES = [
     born: 1230, died: 1295, circa: true, region: "tzarfat", place: "קורביל, צרפת",
     w: "רבנו פרץ", note: "מאחרוני בעלי התוספות בצרפת; הגהותיו על הסמ\"ק נדפסות לצדו, וכן חיבר תוספות ופסקים.",
     books: [{ y: 1290, he: "הגהות רבנו פרץ / תוספות", en: "Glosses on the Semak; Tosafot" }],
+  },
+  {
+    era: "rishonim", he: "שבלי הלקט (צדקיה בן אברהם)", en: "Shibolei HaLeket (Tzidkiyahu ben Avraham)",
+    born: 1220, died: 1280, circa: true, region: "italia", place: "רומא, איטליה",
+    w: "צדקיה בן אברהם", note: "מראשוני איטליה; ליקט הלכות ומנהגי חכמי צרפת ואשכנז.",
+    books: [{ y: 1250, he: "שבלי הלקט", en: "Shibolei HaLeket (halacha & custom)" }],
   },
   {
     era: "rishonim", he: "מהר\"ם מרוטנבורג (מאיר ב\"ר ברוך)", en: "Maharam of Rothenburg",
@@ -1103,6 +1127,12 @@ const FIGURES = [
     born: 1326, died: 1408, region: "sefarad", place: "ברצלונה ← אלג'יר",
     w: "יצחק בר ששת", note: "מגדולי הפוסקים; שו\"ת רב-השפעה.",
     books: [{ y: 1400, he: "שו\"ת הריב\"ש", en: "Responsa of the Rivash" }],
+  },
+  {
+    era: "rishonim", he: "נימוקי יוסף (יוסף חביבא)", en: "Nimukei Yosef (Yosef Chaviva)",
+    born: 1340, died: 1420, circa: true, region: "sefarad", place: "ברצלונה ← סרגוסה, ספרד",
+    w: "יוסף חביבא", note: "מאחרוני הראשונים בספרד, תלמיד תלמידי הר\"ן; פירושו על הרי\"ף.",
+    books: [{ y: 1400, he: "נימוקי יוסף", en: "Nimukei Yosef (commentary on the Rif)" }],
   },
   {
     era: "rishonim", he: "רשב\"ץ (שמעון בן צמח)", en: "Rashbatz (Shimon b. Tzemach Duran)",
@@ -1342,6 +1372,12 @@ const FIGURES = [
     born: 1621, died: 1662, region: "mizrachEurope", place: "וילנה ← הולשוב",
     w: "שבתי כהן", note: "מן הפרשנים המרכזיים של השולחן ערוך.",
     books: [{ y: 1646, he: "שפתי כהן (ש\"ך)", en: "Siftei Kohen (commentary on Shulchan Aruch)" }],
+  },
+  {
+    era: "acharonim", he: "באר הגולה (משה רבקש)", en: "Be'er HaGolah (Moshe Rivkes)",
+    born: 1595, died: 1671, circa: true, region: "mizrachEurope", place: "וילנה, ליטא",
+    w: "משה רבקש", note: "מרבני וילנה; ציין את מקורות הדינים לפסקי השולחן ערוך.",
+    books: [{ y: 1662, he: "באר הגולה", en: "Be'er HaGolah (sources for Shulchan Aruch)" }],
   },
   {
     era: "acharonim", he: "ר' נפתלי כ\"ץ (סמיכת חכמים)", en: "Naftali Katz (Semichat Chachamim)",
@@ -1890,6 +1926,12 @@ const FIGURES = [
     books: [{ y: 1884, he: "ערוך השולחן", en: "Aruch HaShulchan (halachic code)" }],
   },
   {
+    era: "acharonim", he: "אביר יעקב (יעקב אבוחצירא)", en: "Abir Yaakov (Yaakov Abuhatzeira)",
+    born: 1806, died: 1880, region: "tzfonAfrica", place: "מרוקו",
+    w: "יעקב אבוחצירא", note: "רבה של תאפילאלת שבמרוקו, מקובל ופוסק; מאבות שושלת אבוחצירא.",
+    books: [{ y: 1885, he: "פיתוחי חותם", en: "Pituchei Chotam (Torah commentary)" }],
+  },
+  {
     era: "acharonim", he: "כף החיים (יעקב חיים סופר)", en: "Kaf HaChaim (Yaakov Chaim Sofer)",
     born: 1870, died: 1939, region: "eretzIsrael", place: "בגדאד ← ירושלים",
     w: "יעקב חיים סופר", note: "פוסק ומקובל ספרדי; חיבורו היסודי על השולחן ערוך.",
@@ -1900,6 +1942,12 @@ const FIGURES = [
     born: 1835, died: 1909, region: "iraq", place: "בגדאד, עיראק",
     w: "יוסף חיים מבגדאד", note: "מנהיג יהדות בבל; הלכה וקבלה.",
     books: [{ y: 1898, he: "בן איש חי", en: "Ben Ish Chai (halacha & homily)" }],
+  },
+  {
+    era: "acharonim", he: "באבא סאלי (ישראל אבוחצירא)", en: "Baba Sali (Yisrael Abuhatzeira)",
+    born: 1889, died: 1984, region: "eretzIsrael", place: "מרוקו ← נתיבות",
+    w: "באבא סאלי", note: "מקובל מרוקאי-ישראלי, נכד אביר יעקב; נודע כבעל מופת ועלה לנתיבות.",
+    books: [],
   },
   {
     era: "acharonim", he: "חפץ חיים", en: "Chofetz Chaim (Yisrael Meir Kagan)",
@@ -2065,6 +2113,13 @@ const EVENTS = [
 // rather than hand-editing; keys are the `w` (he.wikipedia) titles. Entries
 // without an English article fall back to search in app.js.
 const WIKI_EN = {
+  "נחום איש גמזו": "Nachum Ish Gamzu",
+  "רבי נחמיה": "Rabbi Nehemiah",
+  "ברוך בן יצחק": "Baruch ben Isaac",
+  "צדקיה בן אברהם": "Zedekiah ben Abraham Anaw",
+  "יוסף חביבא": "Joseph ibn Habib",
+  "יעקב אבוחצירא": "Yaakov Abuhatzeira",
+  "באבא סאלי": "Baba Sali",
   "רבן גמליאל הזקן": "Gamaliel",
   "רבן יוחנן בן זכאי": "Yohanan ben Zakkai",
   "רבי צדוק": "Rabbi Zadok",
