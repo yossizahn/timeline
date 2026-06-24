@@ -347,7 +347,7 @@ body.col-resizing { cursor: col-resize; user-select: none; }
   color: var(--muted); font-variant-numeric: tabular-nums;
 }
 .bar.circa .yrs::before { content: "± "; }
-.bar .yrs .age { opacity: .8; font-weight: 500; }
+.bar .yrs .age { display: block; opacity: .8; font-weight: 500; }
 .bar .region {
   display: inline-flex; align-items: center; gap: 5px; margin-top: 7px;
   font-size: 10.5px; font-weight: 600; color: var(--ink);

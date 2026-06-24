@@ -181,7 +181,8 @@ function fmtRange(b, d) { return `${fmtYear(b)}–${fmtYear(d)}`; }
 function fmtLifespan(f) {
   const n = f.died - f.born;
   if (!(n > 0)) return "";
-  return isRTL() ? `${n} ${n === 1 ? "שנה" : "שנים"}` : `${n} ${n === 1 ? "yr" : "yrs"}`;
+  const c = f.circa ? "~" : "";
+  return isRTL() ? `${c}${n} ${n === 1 ? "שנה" : "שנים"}` : `${c}${n} ${n === 1 ? "yr" : "yrs"}`;
 }
 
 // ---------- global lane packing ----------
@@ -350,7 +351,7 @@ function buildCols() {
     bar.innerHTML =
       `<span class="name">${isRTL() ? f.he : f.en}</span>` +
       `<span class="yrs">${fmtRange(f.born, f.died)}` +
-        `${fmtLifespan(f) ? `<span class="age"> · ${fmtLifespan(f)}</span>` : ""}</span>` +
+        `${fmtLifespan(f) ? `<span class="age">${fmtLifespan(f)}</span>` : ""}</span>` +
       `<span class="region"><i style="background:${r.color}"></i>${isRTL() ? r.he : r.en}</span>`;
     bar.title = t("barOpen");
     bar.addEventListener("mousemove", (e) => showTip(figureTip(f), e));
