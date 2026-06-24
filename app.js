@@ -46,6 +46,8 @@ const I18N = {
     legendShift: "מעבר מרכז התורה",
     railHandle: "גררו לשינוי רוחב",
     barOpen: "לחצו לפתיחת הערך בוויקיפדיה",
+    pinFig: "נעצו כדי לשמר את מיקומו על המפה",
+    unpinFig: "ביטול הנעיצה",
     approx: "לערך",
     centerMove: "מעבר מרכז התורה",
     wikiGo: "ויקיפדיה — לחצו לפתיחה",
@@ -93,6 +95,8 @@ const I18N = {
     legendShift: "Torah center moves",
     railHandle: "Drag to resize",
     barOpen: "Click to open the Wikipedia article",
+    pinFig: "Pin to keep this location on the map",
+    unpinFig: "Unpin",
     approx: "approx.",
     centerMove: "Torah center moves",
     wikiGo: "Wikipedia — click to open",
@@ -341,7 +345,7 @@ function buildCols() {
     bar.title = t("barOpen");
     bar.addEventListener("mousemove", (e) => showTip(figureTip(f), e));
     bar.addEventListener("mouseenter", () => { showBorders(f); showPin(f); });
-    bar.addEventListener("mouseleave", () => { hideTip(); restBorders(); hidePin(); });
+    bar.addEventListener("mouseleave", () => { hideTip(); restoreMap(); });
     bar.addEventListener("click", () => { hideTip(); openDrawer(f.w, enTerm(f), isRTL() ? f.he : f.en); });
 
     // region chip → toggle the geographic highlight (don't open Wikipedia)
@@ -349,6 +353,16 @@ function buildCols() {
       e.stopPropagation();
       toggleRegion(f.region);
     });
+
+    // pin toggle → keep this sage's pin + era borders on the map at rest
+    const pinBtn = document.createElement("button");
+    pinBtn.className = "bar-pin";
+    pinBtn.innerHTML = icon("pin", "ic-barpin");
+    pinBtn.title = t(f === pinnedFig ? "unpinFig" : "pinFig");
+    pinBtn.setAttribute("aria-label", pinBtn.title);
+    if (f === pinnedFig) bar.classList.add("pinned");
+    pinBtn.addEventListener("click", (e) => { e.stopPropagation(); togglePin(f); });
+    bar.appendChild(pinBtn);
 
     f.books.forEach((b) => {
       const dot = document.createElement("div");
@@ -786,6 +800,29 @@ function showPin(f) {
 function hidePin() {
   document.getElementById("map-pin").innerHTML = "";
   document.getElementById("map-svg").classList.remove("pinned");
+}
+
+// ---------- sticky pin (a sage held on the map without hovering) ----------
+// One figure may be "pinned": its era borders + location pin persist on the map
+// at rest, instead of the contemporary resting map. Hover still previews other
+// sages; leaving a bar returns to the pinned sage (or the resting map if none).
+let pinnedFig = null;
+function restoreMap() {
+  if (pinnedFig) { showBorders(pinnedFig); showPin(pinnedFig); }
+  else { restBorders(); hidePin(); }
+}
+function togglePin(f) {
+  pinnedFig = (pinnedFig === f) ? null : f;
+  document.querySelectorAll(".bar.pinned").forEach((b) => b.classList.remove("pinned"));
+  document.querySelectorAll(".bar").forEach((b) => {
+    const btn = b.querySelector(".bar-pin");
+    if (!btn) return;
+    const isPinned = +b.dataset.fig === (pinnedFig ? pinnedFig._idx : -1);
+    b.classList.toggle("pinned", isPinned);
+    btn.title = t(isPinned ? "unpinFig" : "pinFig");
+    btn.setAttribute("aria-label", btn.title);
+  });
+  restoreMap();
 }
 
 // gutter width is user-resizable (drag handle on the rail's inner edge); persisted.

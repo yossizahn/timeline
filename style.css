@@ -346,6 +346,25 @@ body.col-resizing { cursor: col-resize; user-select: none; }
 .bar .region i { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; }
 .bar .region:hover { background: rgba(0,0,0,.1); }
 
+/* pin toggle — sits in the reading-end top corner, over the book rail.
+   Hidden until the bar is hovered; stays visible (and tinted) while pinned. */
+.bar-pin {
+  position: absolute; top: 3px; inset-inline-end: 1px; z-index: 7;
+  display: grid; place-items: center; width: 18px; height: 18px; padding: 0;
+  border: none; border-radius: 50%; cursor: pointer; color: var(--muted);
+  background: color-mix(in srgb, var(--c) 16%, #fff);
+  font-size: 11px; line-height: 0; opacity: 0;
+  transition: opacity .12s ease, color .12s ease, background .12s ease;
+}
+.bar:hover .bar-pin, .bar.pinned .bar-pin { opacity: 1; }
+.bar-pin:hover { color: var(--c); background: color-mix(in srgb, var(--c) 28%, #fff); }
+.bar.pinned .bar-pin {
+  color: #fff; background: var(--c);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--c) 45%, transparent);
+}
+/* a pinned sage gets a calm ring in its era colour so it reads as "held" */
+.bar.pinned { box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 60%, #fff), 0 5px 16px rgba(0,0,0,.14); }
+
 /* book markers — pinned to the left rail at their publication year */
 .book {
   position: absolute; inset-inline-end: calc(var(--rail-w) / 2 - 5.5px); transform: translateY(-50%);
