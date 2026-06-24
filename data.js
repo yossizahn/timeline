@@ -594,6 +594,12 @@ const FIGURES = [
     books: [{ y: 1185, he: "השגות הראב\"ד / בעלי הנפש", en: "Hasagot on Mishneh Torah; Ba'alei ha-Nefesh" }],
   },
   {
+    era: "rishonim", he: "בעל המאור (רבי זרחיה הלוי)", en: "Zerachiah ha-Levi (Baal HaMaor)",
+    born: 1125, died: 1186, circa: true, region: "provans", place: "ג'ירונה → לוניל, פרובנס",
+    w: "זרחיה הלוי", note: "מחכמי פרובנס; ספרו \"המאור\" — השגות על הלכות הרי\"ף, ובר-פלוגתא של הראב\"ד.",
+    books: [{ y: 1170, he: "ספר המאור", en: "Sefer ha-Maor (on the Rif)" }],
+  },
+  {
     era: "rishonim", he: "רמב\"ם (משה בן מימון)", en: "Rambam (Maimonides)",
     born: 1138, died: 1204, region: "sefarad", place: "קורדובה, ספרד → פוסטאט, מצרים",
     w: "רמב\"ם", note: "פוסק, פילוסוף ורופא; \"מִמֹּשֶׁה עד מֹשֶׁה...\".",
@@ -1700,6 +1706,7 @@ const WIKI_EN = {
   "יצחק בן אבא מרי": "Isaac ben Abba Mari",
   "אברהם בן יצחק מנרבונה": "Abraham ben Isaac of Narbonne",
   "אברהם בן דוד מפושקירה": "Abraham ben David",
+  "זרחיה הלוי": "Zerachiah ha-Levi of Girona",
   "רמב\"ם": "Maimonides",
   "דוד קמחי": "David Kimche",
   "אליעזר בן יואל": "Eliezer ben Joel HaLevi",
