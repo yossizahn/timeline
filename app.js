@@ -66,7 +66,9 @@ const I18N = {
       "<h3>מפת הגבולות</h3>" +
       "<p>בעת רחיפה על דמות, המפה מציגה את הגבולות המדיניים המשוערים בתקופתה. נתוני הגבולות לקוחים ממיזם <a href='https://github.com/aourednik/historical-basemaps' target='_blank' rel='noopener'>Historical Basemaps</a> (רישיון CC-BY-SA 4.0), הוקרנו אל מרחב המפה של הציר, ושמות הממלכות תורגמו לעברית באופן חלקי — גבולות ללא שם מסומנים בקו בלבד. הגבולות ההיסטוריים משוערים ושנויים במחלוקת מטבעם.</p>" +
       "<h3>הסתייגות</h3>" +
-      "<p>הנתונים לא עברו בדיקה אנושית מלאה וייתכנו טעויות בתאריכים, בשמות ובפרטים. יש לאמת מול מקור מהימן לפני הסתמכות.</p>",
+      "<p>הנתונים לא עברו בדיקה אנושית מלאה וייתכנו טעויות בתאריכים, בשמות ובפרטים. יש לאמת מול מקור מהימן לפני הסתמכות.</p>" +
+      "<h3>קוד המקור</h3>" +
+      "<p>הפרויקט פתוח בקוד מקור ב-<a href='https://github.com/yossizahn/timeline' target='_blank' rel='noopener'>GitHub</a>. אתם מוזמנים לדווח על טעויות או להציע תיקונים.</p>",
   },
   en: {
     title: "Timeline — Sages of Israel",
@@ -111,7 +113,9 @@ const I18N = {
       "<h3>Border map</h3>" +
       "<p>Hovering a figure overlays the approximate political borders of their era. Border data is from the <a href='https://github.com/aourednik/historical-basemaps' target='_blank' rel='noopener'>Historical Basemaps</a> project (CC-BY-SA 4.0), reprojected into the timeline's map space; polity names are partly translated to Hebrew — unnamed borders show as outline only. Historical borders are approximate and inherently contested.</p>" +
       "<h3>Disclaimer</h3>" +
-      "<p>The data has not been fully human-verified and may contain errors in dates, names, and details. Confirm against a reliable source before relying on it.</p>",
+      "<p>The data has not been fully human-verified and may contain errors in dates, names, and details. Confirm against a reliable source before relying on it.</p>" +
+      "<h3>Source code</h3>" +
+      "<p>The project is open source on <a href='https://github.com/yossizahn/timeline' target='_blank' rel='noopener'>GitHub</a>. Reports of errors and suggested fixes are welcome.</p>",
   },
 };
 const t = (k) => I18N[lang][k];
