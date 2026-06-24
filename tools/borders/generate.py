@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Emit per-era border files for the timeline map overlay.
-#  borders/<year>.json = {"y":500,"f":[{"d":"M..Z","l":"הֵבר","x":..,"y":..}, ...]}
+#  borders/<year>.json = {"y":500,"f":[{"d":"M..Z","l":"הֵבר","le":"Eber","x":..,"y":..}, ...]}
 #  borders/index.json  = sorted list of available slice years (for nearest-snap)
 # Labels attach only where a vetted Hebrew name exists; others draw outline only.
 import json, os
@@ -59,6 +59,43 @@ HE = {
   'Mali':'מאלי','Songhai':'סונגהאי','Empire of Ghana':'ממלכת גאנה',
 }
 
+# Clean English display name per canonical Hebrew label (for the English UI).
+EN = {
+  'אוקראינה':'Ukraine','אורדת הזהב':'Golden Horde','איחוד קלמאר':'Kalmar Union',
+  'איטליה':'Italy','אילח\'אנות':'Ilkhanate','אימפריית ההונים':'Hunnic Empire',
+  'אלג\'יריה':'Algeria','אמירות האע\'לבּים':'Aghlabid Emirate','אמירות קורדובה':'Emirate of Córdoba',
+  'אנגליה':'England','ארמניה':'Armenia','ברית המועצות':'USSR','גרמניה':'Germany',
+  'דנמרק':'Denmark','דקיה':'Dacia','האורדה הכחולה':'Blue Horde',
+  'האיחוד הפולני-ליטאי':'Poland-Lithuania','האימפריה האוסטרו-הונגרית':'Austro-Hungarian Empire',
+  'האימפריה הביזנטית':'Byzantine Empire','האימפריה הטימורית':'Timurid Empire',
+  'האימפריה הסאסאנית':'Sasanian Empire','האימפריה הסלג\'וקית':'Seljuk Empire',
+  'האימפריה העות\'מאנית':'Ottoman Empire','האימפריה הפרתית':'Parthian Empire',
+  'האימפריה הצפווית':'Safavid Empire','האימפריה הקרולינגית':'Carolingian Empire',
+  'האימפריה הרומית':'Roman Empire','האימפריה הרומית המערבית':'Western Roman Empire',
+  'האימפריה הרומית הקדושה':'Holy Roman Empire','האימפריה הרוסית':'Russian Empire',
+  'האנגלו-סקסים':'Anglo-Saxons','הונגריה':'Hungary','הממלכה המאוחדת':'United Kingdom',
+  'הממלכה הנבטית':'Nabatean Kingdom','הקיסרות האוסטרית':'Austrian Empire',
+  'ח\'אנות קרים':'Crimean Khanate','ח\'ליפות בני אומיה':'Umayyad Caliphate',
+  'ח\'ליפות בני עבּאס':'Abbasid Caliphate','ח\'ליפות הפאטִמים':'Fatimid Caliphate',
+  'ח\'ליפות קורדובה':'Caliphate of Córdoba','חבר העמים הפולני-ליטאי':'Polish–Lithuanian Commonwealth',
+  'לוב':'Libya','מאלי':'Mali','ממלכת גאנה':'Empire of Ghana',
+  'ממלכת האוסטרוגותים':'Ostrogoths','ממלכת הוויזיגותים':'Visigothic Kingdom',
+  'ממלכת הוונדלים':'Vandals','ממלכת הונגריה':'Kingdom of Hungary','ממלכת הכוזרים':'Khazars',
+  'ממלכת הממלוכּים':'Mamluk Sultanate','ממלכת הפרנקים':'Frankish Kingdom',
+  'ממלכת חִמיָר':'Himyarite Kingdom','ממלכת צרפת':'Kingdom of France',
+  'ממלכת שתי הסיציליות':'Kingdom of the Two Sicilies','מצרים':'Egypt','מרוקו':'Morocco',
+  'נאפולי':'Naples','נובגורוד':'Novgorod','נסיכויות לומברדיה':'Lombard principalities',
+  'נסיכות מוסקבה':'Grand Duchy of Moscow','סודאן':'Sudan','סונגהאי':'Songhai',
+  'ספרד':'Spain','ערב':'Arabia','פולין':'Poland','פורטוגל':'Portugal','פרוסיה':'Prussia',
+  'פרנקיה המזרחית':'East Francia','פרנקיה המערבית':'West Francia','פרס':'Persia',
+  'צארות מוסקבה':'Tsardom of Muscovy','צרפת':'France','קייבּ רוס':'Kievan Rus',
+  'קסטיליה':'Castile','רוסיה':'Russia','שוודיה':'Sweden','שושלת האדריסים':'Idrisid dynasty',
+  'שושלת הבּוּוייהים':'Buyid dynasty','שושלת הזַיַּאנים':'Zayyanid dynasty',
+  'שושלת החַפְצים':'Hafsid dynasty','שושלת המֻוואחידון':'Almohad Caliphate',
+  'שושלת המוראבּיטון':'Almoravid dynasty',
+}
+assert set(EN) >= set(HE.values()), 'EN missing: %s' % (set(HE.values()) - set(EN))
+
 clip = json.load(open(os.path.join(HERE, 'clipped.json')))
 
 def ring_d(coords):
@@ -80,7 +117,7 @@ for yr,feats in clip.items():
         rec={'d':d}
         he=HE.get(f['n'])
         if he and f['area']>40:
-            rec.update(l=he, x=f['lx'], y=f['ly'])
+            rec.update(l=he, le=EN[he], x=f['lx'], y=f['ly'])
             labeled.add(f['n'])
         elif f['area'] > 40:
             unlabeled.add(f['n'])        # major polity we have no Hebrew name for

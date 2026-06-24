@@ -547,15 +547,73 @@ function nearestSlice(year) {
     Math.abs(y - year) < Math.abs(best - year) ? y : best);
 }
 function borderCaption(y) {
+  if (!isRTL()) return y < 0 ? `Borders · ${-y} BCE` : `Borders · ${y} CE`;
   return y < 0 ? `גבולות · ${-y} לפנה"ס` : `גבולות · שנת ${y} לסה"נ`;
 }
 function paintBorders(year, feats) {
   const g = document.getElementById("map-borders");
+  const rtl = isRTL();
   const paths = feats.map((ft) => `<path class="bder" d="${ft.d}"></path>`).join("");
   const labels = feats.filter((ft) => ft.l)
-    .map((ft) => `<text class="blabel" x="${ft.x}" y="${ft.y}">${ft.l}</text>`).join("");
+    .map((ft) => `<text class="blabel" x="${ft.x}" y="${ft.y}">${rtl ? ft.l : (ft.le || ft.l)}</text>`).join("");
   g.innerHTML = paths + labels +
     `<text class="bcap" x="4" y="248">${borderCaption(year)}</text>`;
+  declutterLabels(g.querySelectorAll(".blabel"), g.querySelector(".bcap"));
+}
+// Nudge overlapping border labels apart along their axis of least overlap, so
+// the (wider) English names stay legible. Anchored "middle"; bbox.x already
+// accounts for that. The caption joins as a fixed obstacle (labels yield to it,
+// it doesn't move). A few relaxation passes settle most maps.
+function declutterLabels(nodes, cap) {
+  const PAD = 1;                         // px of breathing room between boxes
+  const box = (n, fixed) => {
+    const b = n.getBBox();
+    // operate on bbox centers; remember the offset to the anchor (x, y baseline)
+    return { n, fixed, cx: b.x + b.width / 2, cy: b.y + b.height / 2,
+             dx: +n.getAttribute("x") - (b.x + b.width / 2),
+             dy: +n.getAttribute("y") - (b.y + b.height / 2),
+             hw: b.width / 2 + PAD, hh: b.height / 2 + PAD };
+  };
+  const boxes = Array.from(nodes).map((n) => box(n, false));
+  if (cap) boxes.push(box(cap, true));
+  // push a movable box by `amt` along an axis; flip toward the interior if the
+  // chosen direction would shove it out of frame (matters next to the corner
+  // caption, where the natural "away" direction has no room).
+  const shove = (m, axis, amt, dir) => {
+    const c = axis === "x" ? "cx" : "cy", hh = axis === "x" ? "hw" : "hh";
+    const hi = (axis === "x" ? 285 : 250) - m[hh];
+    if (m[c] + dir * amt > hi || m[c] + dir * amt < m[hh]) dir = -dir;
+    m[c] += dir * amt;
+  };
+  for (let pass = 0; pass < 14; pass++) {
+    let moved = false;
+    for (let i = 0; i < boxes.length; i++)
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i], b = boxes[j];
+        if (a.fixed && b.fixed) continue;
+        const ox = a.hw + b.hw - Math.abs(a.cx - b.cx);
+        const oy = a.hh + b.hh - Math.abs(a.cy - b.cy);
+        if (ox <= 0 || oy <= 0) continue;             // no overlap
+        moved = true;
+        const axis = oy <= ox ? "y" : "x", o = oy <= ox ? oy : ox;
+        const c = axis === "x" ? "cx" : "cy";
+        if (a.fixed || b.fixed) {                      // move only the movable one
+          const m = a.fixed ? b : a, f = a.fixed ? a : b;
+          shove(m, axis, o, m[c] >= f[c] ? 1 : -1);    // away from the fixed box
+        } else {                                        // split between the two
+          const dir = a[c] <= b[c] ? 1 : -1;
+          a[c] -= dir * o / 2; b[c] += dir * o / 2;
+        }
+      }
+    if (!moved) break;
+  }
+  boxes.forEach((bx) => {
+    if (bx.fixed) return;
+    const x = Math.max(bx.hw, Math.min(285 - bx.hw, bx.cx));   // keep in frame
+    const y = Math.max(bx.hh, Math.min(250 - bx.hh, bx.cy));
+    bx.n.setAttribute("x", (x + bx.dx).toFixed(1));            // back to anchor
+    bx.n.setAttribute("y", (y + bx.dy).toFixed(1));
+  });
 }
 function showBorders(f) {
   const slice = nearestSlice(figureYear(f));
