@@ -341,7 +341,7 @@ function buildCols() {
     bar.title = t("barOpen");
     bar.addEventListener("mousemove", (e) => showTip(figureTip(f), e));
     bar.addEventListener("mouseenter", () => { showBorders(f); showPin(f); });
-    bar.addEventListener("mouseleave", () => { hideTip(); clearBorders(); hidePin(); });
+    bar.addEventListener("mouseleave", () => { hideTip(); restBorders(); hidePin(); });
     bar.addEventListener("click", () => { hideTip(); openDrawer(f.w, enTerm(f), isRTL() ? f.he : f.en); });
 
     // region chip → toggle the geographic highlight (don't open Wikipedia)
@@ -546,7 +546,7 @@ let wantedSlice = null;                  // slice the cursor currently wants pai
 
 fetch("borders/index.json")
   .then((r) => r.json())
-  .then((ys) => { BORDER_YEARS = ys; })
+  .then((ys) => { BORDER_YEARS = ys; restBorders(); })  // paint the resting (contemporary) map
   .catch(() => { BORDER_YEARS = []; });  // fail quiet: overlay just stays off
 
 function figureYear(f) {                 // mid-life best represents a sage's era
@@ -646,8 +646,7 @@ function declutterLabels(nodes, cap) {
     bx.n.setAttribute("y", (y + bx.dy).toFixed(1));
   });
 }
-function showBorders(f) {
-  const slice = nearestSlice(figureYear(f));
+function loadAndPaint(slice) {
   if (slice === null) return;
   wantedSlice = slice;                    // remember what the cursor wants now
   const cached = borderCache[slice];
@@ -659,12 +658,24 @@ function showBorders(f) {
     .then((r) => r.json())
     .then((data) => {
       borderCache[slice] = data.f;
-      if (wantedSlice === slice) paintBorders(slice, data.f); // still the active hover
+      if (wantedSlice === slice) paintBorders(slice, data.f); // still the slice we want
     })
     .catch(() => {
       borderCache[slice] = [];
       if (wantedSlice === slice) clearBorders();              // drop the loading hint
     });
+}
+function showBorders(f) { loadAndPaint(nearestSlice(figureYear(f))); }
+// Resting state: with no sage hovered, the map shows present-day borders (the
+// most recent slice). Hover swaps in the era map; mouseleave returns here.
+function restBorders() {
+  if (BORDER_YEARS && BORDER_YEARS.length) loadAndPaint(BORDER_YEARS[BORDER_YEARS.length - 1]);
+}
+// Repaint the currently-wanted slice in the active UI language (e.g. after a
+// language toggle), so resting labels track the chrome without a fresh hover.
+function repaintBorders() {
+  if (wantedSlice !== null && Array.isArray(borderCache[wantedSlice]))
+    paintBorders(wantedSlice, borderCache[wantedSlice]);
 }
 function clearBorders() {
   wantedSlice = null;
@@ -1213,6 +1224,7 @@ function applyLang() {
 
   buildLegend();
   buildMap();
+  repaintBorders();   // resting/active border labels follow the UI language
   renderAll();
 }
 

@@ -410,6 +410,8 @@ body.col-resizing { cursor: col-resize; user-select: none; }
 /* in LTR, float the map bottom-right to mirror the layout */
 [dir="ltr"] .map-panel { left: auto; right: 16px; }
 .map-panel.collapsed .map-toggle { transform: rotate(-90deg); }
+/* panel is bottom-right in LTR, so mirror the collapse chevron to point inward */
+[dir="ltr"] .map-panel.collapsed .map-toggle { transform: rotate(90deg); }
 .map-panel.collapsed .map-body { display: none; }
 .map-body { padding: 8px 8px 6px; }
 .map-body svg { width: 100%; height: auto; display: block; border-radius: 8px; }
@@ -473,9 +475,9 @@ body.col-resizing { cursor: col-resize; user-select: none; }
 }
 #map-dots .mdot.active circle { stroke: #fff; stroke-width: 2px; r: 5.6px; }
 #map-dots .mdot.dim { opacity: .25; }
-#map-dots .mlabel { opacity: 0; transition: opacity .12s ease; }
-#map-dots .mdot:hover .mlabel,
-#map-dots .mdot.active .mlabel { opacity: 1; }
+/* region labels show at rest; while a sage is hovered the whole #map-dots group
+   is hidden by .pinned, so they only ever appear when nothing is hovered */
+#map-dots .mlabel { opacity: 1; transition: opacity .12s ease; }
 /* while a sage is hovered, hide the region-filter dots and the Torah-center
    migration arrows, showing only the pin */
 #map-svg.pinned #map-dots,
