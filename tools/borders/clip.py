@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""Clip + reproject the historical-basemaps slices into the timeline map space.
+
+Reads ./geojson/world_*.geojson, clips each to the map's geographic window,
+reprojects into the 285x252 viewBox, simplifies, and writes ./clipped.json
+(intermediate, consumed by generate.py).
+
+Projection — regional equirectangular, standard parallel 40N — recovered from
+the REGIONS anchor points in data.js. If you change the map's viewBox or want a
+different region/zoom, edit the constants and window below, then re-run the
+pipeline (clip.py then generate.py).
+
+Requires shapely:  pip install --target ./.pylibs shapely
+                    PYTHONPATH=./.pylibs python3 clip.py
+"""
+import json, glob, os, math
+from shapely.geometry import shape, box, mapping
+from shapely.ops import transform
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+# --- viewBox the map SVG uses (index.html: <svg viewBox="0 0 W H">) ---
+VIEW_W, VIEW_H = 285, 252
+
+# --- projection: pixel = (A*lon + B, D - C*lat) ---
+A = 6.0 * math.cos(math.radians(40))   # 4.5963 px / deg lon
+B = 55.18
+C = 6.0                                  # px / deg lat
+D = 359.9
+def px(lon, lat): return (A * lon + B, D - C * lat)
+
+VIEW = box(0, 0, VIEW_W, VIEW_H)
+# lon/lat window, a touch larger than the viewBox (clip here first = fewer points)
+WIN = box(-13.0, 16.0, 51.0, 61.0)
+SIMPLIFY = 0.5        # px tolerance; lower = more detail (raise map res -> lower this)
+MIN_AREA = 0          # keep everything here; generate.py applies the display threshold
+
+def year_of(path):
+    s = os.path.basename(path)[len('world_'):-len('.geojson')]
+    return -int(s[2:]) if s.startswith('bc') else int(s)
+
+def round_geom(geom, nd=1):
+    return transform(lambda x, y, z=None: (round(x, nd), round(y, nd)), geom)
+
+def main():
+    out, names = {}, {}
+    for path in sorted(glob.glob(os.path.join(HERE, 'geojson', 'world_*.geojson'))):
+        yr = year_of(path)
+        feats = []
+        for ft in json.load(open(path))['features']:
+            name = (ft['properties'] or {}).get('NAME')
+            if not name:
+                continue
+            try:
+                g = shape(ft['geometry'])
+            except Exception:
+                continue
+            if not g.is_valid:
+                g = g.buffer(0)
+            g = g.intersection(WIN)
+            if g.is_empty:
+                continue
+            g = transform(px, g).intersection(VIEW).simplify(SIMPLIFY, preserve_topology=True)
+            if g.is_empty:
+                continue
+            names[name] = names.get(name, 0) + 1
+            rp = g.representative_point()
+            feats.append({'n': name, 'g': mapping(round_geom(g)),
+                          'lx': round(rp.x, 1), 'ly': round(rp.y, 1),
+                          'area': round(g.area, 1)})
+        out[str(yr)] = feats
+        print(f"{yr:>5}: {len(feats):>3} features")
+    json.dump(out, open(os.path.join(HERE, 'clipped.json'), 'w'))
+    json.dump(sorted(names.items(), key=lambda kv: -kv[1]),
+              open(os.path.join(HERE, 'names.json'), 'w'), ensure_ascii=False, indent=0)
+    print(f"\n{len(names)} distinct names -> names.json ; geometry -> clipped.json")
+
+if __name__ == '__main__':
+    main()

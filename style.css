@@ -374,6 +374,10 @@ body.col-resizing { cursor: col-resize; user-select: none; }
   border: 1px solid var(--line); border-radius: 12px;
   box-shadow: 0 6px 22px rgba(0,0,0,.16); overflow: hidden;
 }
+/* enlarged mode: ~2x linear (4x area); svg width:100% does the scaling */
+.map-panel.large { width: min(520px, 94vw); }
+.map-btns { display: inline-flex; align-items: center; gap: 2px; }
+.map-panel.large #map-size { color: var(--ink); }
 .map-head {
   display: flex; align-items: center; justify-content: space-between;
   padding: 7px 12px; border-bottom: 1px solid var(--line); background: var(--bg);
@@ -392,6 +396,24 @@ body.col-resizing { cursor: col-resize; user-select: none; }
 .map-body { padding: 8px 8px 6px; }
 .map-body svg { width: 100%; height: auto; display: block; border-radius: 8px; }
 .map-hint { text-align: center; color: var(--muted); font-size: 11px; margin-top: 4px; }
+
+/* era political borders, shown while hovering a sage */
+#map-borders { pointer-events: none; }
+#map-borders .bder {
+  fill: var(--ink); fill-opacity: .05;
+  stroke: #7a5b2e; stroke-width: .5; stroke-opacity: .55;
+  stroke-linejoin: round;
+}
+#map-borders .blabel {
+  font-family: "Rubik", sans-serif; font-size: 6px; font-weight: 700;
+  fill: #5a4326; paint-order: stroke; stroke: var(--panel); stroke-width: 1.8px;
+  stroke-linejoin: round; text-anchor: middle;
+}
+#map-borders .bcap {
+  font-family: "Rubik", sans-serif; font-size: 8px; font-weight: 700;
+  fill: var(--muted); paint-order: stroke; stroke: var(--panel); stroke-width: 2.4px;
+  stroke-linejoin: round;
+}
 
 #map-routes path {
   fill: none; stroke: var(--shift); stroke-width: 1.3;

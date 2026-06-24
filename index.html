@@ -99,7 +99,10 @@
   <div class="map-panel" id="map-panel">
     <div class="map-head">
       <span class="map-title" id="map-title">מרכזי התורה בעולם</span>
-      <button id="map-toggle" class="map-toggle" type="button" title="הצג/הסתר מפה">▾</button>
+      <span class="map-btns">
+        <button id="map-size" class="map-toggle" type="button" title="הגדל/הקטן מפה">⤢</button>
+        <button id="map-toggle" class="map-toggle" type="button" title="הצג/הסתר מפה">▾</button>
+      </span>
     </div>
     <div class="map-body" id="map-body">
       <svg viewBox="0 0 285 252" id="map-svg" xmlns="http://www.w3.org/2000/svg">
@@ -110,6 +113,7 @@
         </defs>
         <rect x="0" y="0" width="285" height="252" fill="var(--sea)"/>
         <path id="land" d="" fill="var(--land)" stroke="var(--land-edge)" stroke-width="0.6" stroke-linejoin="round"/>
+        <g id="map-borders"></g>
         <g id="map-routes"></g>
         <g id="map-dots"></g>
       </svg>

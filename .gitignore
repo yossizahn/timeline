@@ -1,2 +1,9 @@
 .DS_Store
 .claude/
+
+# borders build pipeline — keep scripts, drop bulky/derived inputs (tools/borders/README.md)
+tools/borders/geojson/
+tools/borders/.pylibs/
+tools/borders/__pycache__/
+tools/borders/clipped.json
+tools/borders/names.json

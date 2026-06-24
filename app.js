@@ -63,6 +63,8 @@ const I18N = {
       "<p>הלידה והפטירה מוצגות לפי הספירה הנוצרית (לספירה). השנה העברית מחושבת כשנה הלועזית בתוספת 3760 — בקירוב, שכן ייתכן הפרש של שנה סביב ראש השנה. הסימן ± מציין תאריך מסורתי או משוער, הנפוץ במיוחד בקרב התנאים והאמוראים, שתאריכיהם אינם ודאיים.</p>" +
       "<h3>קישורי ויקיפדיה</h3>" +
       "<p>בעברית הקישור מוביל ישירות לערך; באנגלית הוא נקבע לפי הקישור הבין-לשוני שבערך העברי, ובהיעדר ערך מקביל מתבצע חיפוש.</p>" +
+      "<h3>מפת הגבולות</h3>" +
+      "<p>בעת רחיפה על דמות, המפה מציגה את הגבולות המדיניים המשוערים בתקופתה. נתוני הגבולות לקוחים ממיזם <a href='https://github.com/aourednik/historical-basemaps' target='_blank' rel='noopener'>Historical Basemaps</a> (רישיון CC-BY-SA 4.0), הוקרנו אל מרחב המפה של הציר, ושמות הממלכות תורגמו לעברית באופן חלקי — גבולות ללא שם מסומנים בקו בלבד. הגבולות ההיסטוריים משוערים ושנויים במחלוקת מטבעם.</p>" +
       "<h3>הסתייגות</h3>" +
       "<p>הנתונים לא עברו בדיקה אנושית מלאה וייתכנו טעויות בתאריכים, בשמות ובפרטים. יש לאמת מול מקור מהימן לפני הסתמכות.</p>",
   },
@@ -106,6 +108,8 @@ const I18N = {
       "<p>Birth and death are shown in the Common Era (CE). The Hebrew year is the CE year plus 3760 — approximately, since it can differ by a year around Rosh Hashanah. A ± marks a traditional or approximate date, common especially among the Tannaim and Amoraim, whose dates are uncertain.</p>" +
       "<h3>Wikipedia links</h3>" +
       "<p>In Hebrew the link goes straight to the article; in English it follows the interlanguage link in the Hebrew article, falling back to a search when no parallel article exists.</p>" +
+      "<h3>Border map</h3>" +
+      "<p>Hovering a figure overlays the approximate political borders of their era. Border data is from the <a href='https://github.com/aourednik/historical-basemaps' target='_blank' rel='noopener'>Historical Basemaps</a> project (CC-BY-SA 4.0), reprojected into the timeline's map space; polity names are partly translated to Hebrew — unnamed borders show as outline only. Historical borders are approximate and inherently contested.</p>" +
       "<h3>Disclaimer</h3>" +
       "<p>The data has not been fully human-verified and may contain errors in dates, names, and details. Confirm against a reliable source before relying on it.</p>",
   },
@@ -332,7 +336,8 @@ function buildCols() {
       `<span class="region"><i style="background:${r.color}"></i>${isRTL() ? r.he : r.en}</span>`;
     bar.title = t("barOpen");
     bar.addEventListener("mousemove", (e) => showTip(figureTip(f), e));
-    bar.addEventListener("mouseleave", hideTip);
+    bar.addEventListener("mouseenter", () => showBorders(f));
+    bar.addEventListener("mouseleave", () => { hideTip(); clearBorders(); });
     bar.addEventListener("click", () => { hideTip(); openDrawer(f.w, enTerm(f), isRTL() ? f.he : f.en); });
 
     // region chip → toggle the geographic highlight (don't open Wikipedia)
@@ -517,6 +522,60 @@ function buildMap() {
   }).join("");
   g.querySelectorAll(".mdot").forEach((el) =>
     el.addEventListener("click", () => toggleRegion(el.dataset.region)));
+}
+
+// ---------- era political borders (hover overlay) ----------
+// Per-era border geometry lives in borders/<year>.json (generated offline from
+// historical-basemaps, reprojected into this map's 285x252 space). We lazy-load
+// the nearest slice the first time a sage from that period is hovered, cache it,
+// and paint outlines + Hebrew labels into #map-borders until the mouse leaves.
+let BORDER_YEARS = null;                 // sorted slice years, from borders/index.json
+const borderCache = {};                  // year -> features array (or "loading")
+let borderToken = 0;                     // guards against out-of-order async paints
+
+fetch("borders/index.json")
+  .then((r) => r.json())
+  .then((ys) => { BORDER_YEARS = ys; })
+  .catch(() => { BORDER_YEARS = []; });  // fail quiet: overlay just stays off
+
+function figureYear(f) {                 // mid-life best represents a sage's era
+  return Math.round((f.born + f.died) / 2);
+}
+function nearestSlice(year) {
+  if (!BORDER_YEARS || !BORDER_YEARS.length) return null;
+  return BORDER_YEARS.reduce((best, y) =>
+    Math.abs(y - year) < Math.abs(best - year) ? y : best);
+}
+function borderCaption(y) {
+  return y < 0 ? `גבולות · ${-y} לפנה"ס` : `גבולות · שנת ${y} לסה"נ`;
+}
+function paintBorders(year, feats) {
+  const g = document.getElementById("map-borders");
+  const paths = feats.map((ft) => `<path class="bder" d="${ft.d}"></path>`).join("");
+  const labels = feats.filter((ft) => ft.l)
+    .map((ft) => `<text class="blabel" x="${ft.x}" y="${ft.y}">${ft.l}</text>`).join("");
+  g.innerHTML = paths + labels +
+    `<text class="bcap" x="4" y="248">${borderCaption(year)}</text>`;
+}
+function showBorders(f) {
+  const slice = nearestSlice(figureYear(f));
+  if (slice === null) return;
+  const token = ++borderToken;
+  const cached = borderCache[slice];
+  if (Array.isArray(cached)) { paintBorders(slice, cached); return; }
+  if (cached === "loading") return;      // in-flight; its .then will paint
+  borderCache[slice] = "loading";
+  fetch(`borders/${slice}.json`)
+    .then((r) => r.json())
+    .then((data) => {
+      borderCache[slice] = data.f;
+      if (token === borderToken) paintBorders(slice, data.f); // still the active hover
+    })
+    .catch(() => { borderCache[slice] = []; });
+}
+function clearBorders() {
+  borderToken++;
+  document.getElementById("map-borders").innerHTML = "";
 }
 
 // gutter width is user-resizable (drag handle on the rail's inner edge); persisted.
@@ -738,6 +797,11 @@ document.getElementById("show-events").addEventListener("change", renderAll);
 document.getElementById("region-reset").addEventListener("click", clearRegions);
 document.getElementById("map-toggle").addEventListener("click", () =>
   document.getElementById("map-panel").classList.toggle("collapsed"));
+document.getElementById("map-size").addEventListener("click", () => {
+  const panel = document.getElementById("map-panel");
+  panel.classList.remove("collapsed");        // enlarging implies showing it
+  panel.classList.toggle("large");
+});
 
 // ---- dismissible data-quality warning (remembers the dismissal) ----
 (function initDataWarning() {
