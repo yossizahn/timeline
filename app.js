@@ -976,12 +976,60 @@ document.getElementById("show-events").addEventListener("change", renderAll);
 document.getElementById("region-reset").addEventListener("click", clearRegions);
 document.getElementById("map-toggle").addEventListener("click", () =>
   document.getElementById("map-panel").classList.toggle("collapsed"));
-document.getElementById("map-size").addEventListener("click", () => {
+// ---- free-resizable map: drag the corner grip to any size; the ⤢ button is a
+// quick default↔2x preset. Width is persisted; the SVG (width:100%) scales to fit.
+(function makeMapResizable() {
   const panel = document.getElementById("map-panel");
-  panel.classList.remove("collapsed");        // enlarging implies showing it
-  const large = panel.classList.toggle("large");
-  try { localStorage.setItem("mapLarge", large ? "1" : "0"); } catch (_) {}
-});
+  if (!panel) return;
+  const DEFW = 260, BIGW = 520, MINW = 190;
+  const maxW = () => Math.min(window.innerWidth * 0.94, 760);
+
+  function setWidth(w) {
+    w = Math.max(MINW, Math.min(maxW(), w));
+    panel.style.width = w + "px";
+    try { localStorage.setItem("mapWidth", String(Math.round(w))); } catch (_) {}
+    return w;
+  }
+
+  // restore a remembered width (skip on mobile, where the map starts collapsed)
+  if (!isMobile) try {
+    const saved = parseFloat(localStorage.getItem("mapWidth"));
+    if (saved) setWidth(saved);
+  } catch (_) {}
+
+  // ⤢ button: toggle between the default and the 2x preset
+  document.getElementById("map-size").addEventListener("click", () => {
+    panel.classList.remove("collapsed");        // enlarging implies showing it
+    setWidth(panel.getBoundingClientRect().width < (DEFW + BIGW) / 2 ? BIGW : DEFW);
+  });
+
+  if (isMobile) return;                          // no drag-grip on touch layouts
+  const grip = document.createElement("div");
+  grip.className = "map-resize";
+  grip.title = "גרור לשינוי גודל המפה";
+  panel.appendChild(grip);
+
+  let resizing = false, left0 = 0;
+  grip.addEventListener("pointerdown", e => {
+    const r = panel.getBoundingClientRect();
+    // pin to left/top so the width grows rightward predictably in both directions
+    panel.style.left = r.left + "px"; panel.style.top = r.top + "px";
+    panel.style.right = "auto"; panel.style.bottom = "auto";
+    left0 = r.left; resizing = true;
+    grip.setPointerCapture(e.pointerId);
+    e.preventDefault(); e.stopPropagation();
+  });
+  grip.addEventListener("pointermove", e => {
+    if (resizing) setWidth(e.clientX - left0);
+  });
+  function end(e) {
+    if (!resizing) return;
+    resizing = false;
+    try { grip.releasePointerCapture(e.pointerId); } catch (_) {}
+  }
+  grip.addEventListener("pointerup", end);
+  grip.addEventListener("pointercancel", end);
+})();
 
 // ---- dismissible data-quality warning (remembers the dismissal) ----
 (function initDataWarning() {
@@ -1123,13 +1171,8 @@ function setLang(l) {
 if (isMobile) {
   document.getElementById("map-panel").classList.add("collapsed");
   document.getElementById("show-events").checked = false;
-} else {
-  // restore the remembered map pane size (large vs. normal)
-  try {
-    if (localStorage.getItem("mapLarge") === "1")
-      document.getElementById("map-panel").classList.add("large");
-  } catch (_) {}
 }
+// (desktop map width is restored by makeMapResizable from the saved mapWidth)
 
 // `mode` is already resolved (saved choice, else language default); reflect it
 syncYearButtons();

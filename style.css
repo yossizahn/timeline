@@ -374,10 +374,18 @@ body.col-resizing { cursor: col-resize; user-select: none; }
   border: 1px solid var(--line); border-radius: 12px;
   box-shadow: 0 6px 22px rgba(0,0,0,.16); overflow: hidden;
 }
-/* enlarged mode: ~2x linear (4x area); svg width:100% does the scaling */
-.map-panel.large { width: min(520px, 94vw); }
 .map-btns { display: inline-flex; align-items: center; gap: 2px; }
-.map-panel.large #map-size { color: var(--ink); }
+/* free-resize grip in the bottom corner; svg width:100% scales to any width.
+   diagonal strokes clipped to the corner triangle = the classic resize grip */
+.map-resize {
+  position: absolute; bottom: 4px; right: 4px; width: 13px; height: 13px;
+  cursor: nwse-resize; touch-action: none; z-index: 2; opacity: .5;
+  background: repeating-linear-gradient(45deg,
+    var(--muted) 0 1.5px, transparent 1.5px 4px);
+  -webkit-mask: linear-gradient(135deg, transparent 0 48%, #000 52%);
+          mask: linear-gradient(135deg, transparent 0 48%, #000 52%);
+}
+.map-resize:hover { opacity: .85; }
 .map-head {
   display: flex; align-items: center; justify-content: space-between;
   padding: 7px 12px; border-bottom: 1px solid var(--line); background: var(--bg);
