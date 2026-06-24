@@ -216,6 +216,7 @@ function openDrawer(heTerm, enTermStr, title) {
 function setDrawerLang(lang) {
   drawerLang = lang;
   const url = lang === "he" ? heUrl(drawerTerms.he) : enUrl(drawerTerms.he, drawerTerms.en);
+  document.getElementById("d-loader").hidden = false; // show until the iframe loads
   document.getElementById("d-frame").src = url;
   document.getElementById("d-open").href = url;
   document.getElementById("d-he").classList.toggle("active", lang === "he");
@@ -225,6 +226,9 @@ function closeDrawer() {
   drawer.hidden = true;
   document.getElementById("d-frame").src = "about:blank"; // stop loading
 }
+document.getElementById("d-frame").addEventListener("load", () => {
+  document.getElementById("d-loader").hidden = true; // hide once the article paints
+});
 document.getElementById("d-he").addEventListener("click", () => setDrawerLang("he"));
 document.getElementById("d-en").addEventListener("click", () => setDrawerLang("en"));
 function syncMobileBtn() {
