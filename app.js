@@ -9,11 +9,11 @@ const HEB_OFFSET = 3760; // CE -> Hebrew year (approx.)
 const MIN_BAR_H = 88;    // px; short lifespans get a readable minimum (name + years + region chip)
 const MIN_YEARS = MIN_BAR_H / PX;
 
-// UI language: an explicit saved choice wins; otherwise follow the browser
-// (English only if preferred), defaulting to Hebrew.
+// UI language: an explicit saved choice wins; otherwise follow the browser's
+// primary language — Hebrew for Hebrew browsers, English for everything else.
 const savedLang = localStorage.getItem("lang");
-const prefersEn = (navigator.languages || [navigator.language || ""]).some((l) => l.toLowerCase().startsWith("en"));
-let lang = savedLang === "en" || savedLang === "he" ? savedLang : prefersEn ? "en" : "he";
+const navLang = ((navigator.languages && navigator.languages[0]) || navigator.language || "").toLowerCase();
+let lang = savedLang === "en" || savedLang === "he" ? savedLang : /^(he|iw)/.test(navLang) ? "he" : "en";
 
 // Year display ("heb" | "sec"): an explicit saved choice wins; otherwise it
 // follows the language (Hebrew → Hebrew years, English → Common Era).
