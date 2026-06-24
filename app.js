@@ -174,6 +174,12 @@ function gematria(num) {
 
 function fmtYear(ce) { return mode === "sec" ? String(ce) : gematria(ce + HEB_OFFSET); }
 function fmtRange(b, d) { return `${fmtYear(b)}–${fmtYear(d)}`; }
+// total years lived (death − birth), labelled in the UI language; "" if unknown
+function fmtLifespan(f) {
+  const n = f.died - f.born;
+  if (!(n > 0)) return "";
+  return isRTL() ? `${n} ${n === 1 ? "שנה" : "שנים"}` : `${n} ${n === 1 ? "yr" : "yrs"}`;
+}
 
 // ---------- global lane packing ----------
 // All figures share one field of lanes (eras barely overlap in time, so this
@@ -278,7 +284,7 @@ function figureTip(f) {
   return `<h4>${primary}</h4>
     <div class="en">${secondary}</div>
     <div>${f.note}</div>
-    <div class="meta">${fmtRange(f.born, f.died)}${f.circa ? " (" + t("approx") + ")" : ""} · ${icon("map-pin", "ic-pin")}${f.place}</div>
+    <div class="meta">${fmtRange(f.born, f.died)}${f.circa ? " (" + t("approx") + ")" : ""}${fmtLifespan(f) ? " · " + fmtLifespan(f) : ""} · ${icon("map-pin", "ic-pin")}${f.place}</div>
     <div class="region-tip"><i style="background:${r.color}"></i>${region}</div>
     <div class="books">${books}</div>
     <div class="go">${icon("arrow-up-right", "ic-go")}${t("wikiGo")}</div>`;
@@ -340,7 +346,8 @@ function buildCols() {
     bar.style.width = LANE_W - LANE_GAP + "px";
     bar.innerHTML =
       `<span class="name">${isRTL() ? f.he : f.en}</span>` +
-      `<span class="yrs">${fmtRange(f.born, f.died)}</span>` +
+      `<span class="yrs">${fmtRange(f.born, f.died)}` +
+        `${fmtLifespan(f) ? `<span class="age"> · ${fmtLifespan(f)}</span>` : ""}</span>` +
       `<span class="region"><i style="background:${r.color}"></i>${isRTL() ? r.he : r.en}</span>`;
     bar.title = t("barOpen");
     bar.addEventListener("mousemove", (e) => showTip(figureTip(f), e));
