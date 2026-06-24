@@ -567,8 +567,12 @@ function paintBorders(year, feats) {
   const paths = feats.map((ft) => `<path class="bder" d="${ft.d}"></path>`).join("");
   const labels = feats.filter((ft) => ft.l)
     .map((ft) => `<text class="blabel" x="${ft.x}" y="${ft.y}">${rtl ? ft.l : (ft.le || ft.l)}</text>`).join("");
-  g.innerHTML = paths + labels +
-    `<text class="bcap" x="4" y="248">${borderCaption(year)}</text>`;
+  // Anchor the caption to the appropriate side so the (RTL Hebrew) run flows
+  // inward instead of off the left edge of the 285-wide map.
+  const cap = rtl
+    ? `<text class="bcap" x="281" y="248" text-anchor="start" direction="rtl">${borderCaption(year)}</text>`
+    : `<text class="bcap" x="4" y="248">${borderCaption(year)}</text>`;
+  g.innerHTML = paths + labels + cap;
   declutterLabels(g.querySelectorAll(".blabel"), g.querySelector(".bcap"));
 }
 // Nudge overlapping border labels apart along their axis of least overlap, so
