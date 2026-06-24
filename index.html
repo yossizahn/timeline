@@ -32,13 +32,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=dev10" />
+  <link rel="stylesheet" href="style.css?v=dev11" />
 </head>
 <body>
   <div class="data-warning" id="data-warning" role="alert">
-    <span class="dw-icon" aria-hidden="true">⚠️</span>
+    <span class="dw-icon" aria-hidden="true" data-icon="alert-triangle"></span>
     <span class="dw-text" id="dw-text">שימו לב: הנתונים נוצרו אוטומטית. התאריכים הוצלבו באופן ממוחשב מול מקורות ויקימדיה (ויקיפדיה וויקינתונים), אך לא עברו בדיקה אנושית — ייתכנו טעויות בתאריכים, בשמות ובפרטים. אמתו מול מקור מהימן לפני הסתמכות.</span>
-    <button type="button" class="dw-close" id="dw-close" aria-label="סגירת ההודעה">×</button>
+    <button type="button" class="dw-close" id="dw-close" aria-label="סגירת ההודעה" data-icon="x"></button>
   </div>
   <header class="topbar">
     <div class="topbar-row">
@@ -98,10 +98,9 @@
 
   <div class="map-panel" id="map-panel">
     <div class="map-head">
-      <span class="map-title" id="map-title">מרכזי התורה בעולם</span>
+      <span class="map-title" id="map-title">מפה</span>
       <span class="map-btns">
-        <button id="map-size" class="map-toggle" type="button" title="הגדל/הקטן מפה">⤢</button>
-        <button id="map-toggle" class="map-toggle" type="button" title="הצג/הסתר מפה">▾</button>
+        <button id="map-toggle" class="map-toggle" type="button" title="הצג/הסתר מפה" data-icon="chevron-down"></button>
       </span>
     </div>
     <div class="map-body" id="map-body">
@@ -128,7 +127,7 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="about-title">
       <header class="modal-head">
         <span class="modal-title" id="about-title">אודות הפרויקט</span>
-        <button id="about-close" class="modal-close" type="button" title="סגור" aria-label="סגור">✕</button>
+        <button id="about-close" class="modal-close" type="button" title="סגור" aria-label="סגור" data-icon="x"></button>
       </header>
       <div class="modal-body" id="about-body"></div>
     </div>
@@ -141,9 +140,9 @@
         <button id="d-en" class="dtab" type="button">English</button>
       </div>
       <span class="dtitle" id="d-title"></span>
-      <button id="d-mobile" class="dmobile" type="button" aria-pressed="false" title="גרסת מובייל של ויקיפדיה">📱</button>
-      <a id="d-open" class="dopen" target="_blank" rel="noopener" title="פתח בלשונית חדשה">↗</a>
-      <button id="d-close" class="dclose" type="button" title="סגור">✕</button>
+      <button id="d-mobile" class="dmobile" type="button" aria-pressed="false" title="גרסת מובייל של ויקיפדיה" data-icon="smartphone"></button>
+      <a id="d-open" class="dopen" target="_blank" rel="noopener" title="פתח בלשונית חדשה" data-icon="arrow-up-right"></a>
+      <button id="d-close" class="dclose" type="button" title="סגור" data-icon="x"></button>
     </header>
     <div class="dframe-wrap">
       <div class="dloader" id="d-loader" hidden><div class="dspinner"></div></div>
@@ -153,6 +152,7 @@
 
   <script src="data.js"></script>
   <script src="map.js"></script>
-  <script src="app.js?v=dev10"></script>
+  <script src="icons.js?v=dev11"></script>
+  <script src="app.js?v=dev11"></script>
 </body>
 </html>

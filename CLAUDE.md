@@ -7,7 +7,7 @@ Live at <https://yossizahn.github.io/timeline/>.
 ## Stack & running
 
 - **Static site, no build step.** Plain HTML/CSS/JS loaded in order:
-  `data.js` → `map.js` → `app.js`.
+  `data.js` → `map.js` → `icons.js` → `app.js`.
 - **Preview:** `.claude/launch.json` runs `python3 -m http.server 4178`. Use the
   preview server rather than opening files directly (relative script paths).
 - Deploys automatically: pushing `main` rebuilds **GitHub Pages**
@@ -22,6 +22,7 @@ Live at <https://yossizahn.github.io/timeline/>.
 | `app.js` | Rendering & interaction. Reads CSS vars for layout; lane-packing; tooltip; drawer; map; region filter; events rail. |
 | `style.css` | Theming via CSS custom properties in `:root` (colors, `--start-year`, `--end-year`, `--px-year`, `--evt-gutter`, `--axis-w`, `--lane-w`). |
 | `map.js` | `LAND_PATH` — generated coastline (Natural Earth 110m land, regional equirectangular projection, viewBox `285×252`). Do not hand-edit. |
+| `icons.js` | Inline SVG icon set (vendored [Lucide](https://lucide.dev) line icons + a custom `star-of-david`). `icon(name, cls)` returns an `<svg>` string for dynamic markup; `fillStaticIcons()` populates `[data-icon]` elements in `index.html` on load. All UI glyphs go through here — no raw emoji/symbols in the UI. |
 | `borders/` | Per-year political-border slices (`<year>.json`) + `index.json` (sorted slice years). Loaded on demand for the era-borders overlay shown when hovering a sage; `app.js` snaps the figure's date to the nearest slice. **GENERATED** by `tools/borders/` — don't hand-edit. |
 | `tools/borders/` | Offline pipeline that produces `borders/` (`fetch.sh` → `clip.py` → `generate.py`, with `names.json` for label placement). See its `README.md`. |
 

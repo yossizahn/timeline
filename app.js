@@ -36,7 +36,7 @@ const I18N = {
     yearSec: "שנה לועזית",
     events: "אירועים היסטוריים",
     hint: "גלול מעלה ומטה לאורך הדורות · רחף לפרטים · לחצו על שם או אירוע לערך בוויקיפדיה · לחצו על תווית אזור כדי לסנן לפי מרכז תורה",
-    mapTitle: "מרכזי התורה בעולם",
+    mapTitle: "מפה",
     mapHint: "לחצו על אזור כדי לסנן",
     mapToggle: "הצג/הסתר מפה",
     warn: "שימו לב: הנתונים נוצרו אוטומטית. התאריכים הוצלבו באופן ממוחשב מול מקורות ויקימדיה (ויקיפדיה וויקינתונים), אך לא עברו בדיקה אנושית — ייתכנו טעויות בתאריכים, בשמות ובפרטים. אמתו מול מקור מהימן לפני הסתמכות.",
@@ -49,9 +49,11 @@ const I18N = {
     legendShift: "מעבר מרכז התורה",
     railHandle: "גררו לשינוי רוחב",
     barOpen: "לחצו לפתיחת הערך בוויקיפדיה",
+    pinFig: "נעצו כדי לשמר את מיקומו על המפה",
+    unpinFig: "ביטול הנעיצה",
     approx: "לערך",
     centerMove: "מעבר מרכז התורה",
-    wikiGo: "↗ ויקיפדיה — לחצו לפתיחה",
+    wikiGo: "ויקיפדיה — לחצו לפתיחה",
     aboutBtn: "אודות",
     search: "חיפוש חכם…",
     legendCap: "תקופות",
@@ -83,7 +85,7 @@ const I18N = {
     yearSec: "Common era",
     events: "Historical events",
     hint: "Scroll up and down through the generations · hover for details · click a name or event for its Wikipedia article · click a region label to filter by Torah center",
-    mapTitle: "Centers of Torah",
+    mapTitle: "Map",
     mapHint: "Click a region to filter",
     mapToggle: "Show/hide map",
     warn: "Note: this data was generated automatically. Dates have been machine-crosschecked against Wikimedia sources (Wikipedia and Wikidata), but it has not been human-verified — dates, names, and details may contain errors. Confirm against a reliable source before relying on it.",
@@ -96,9 +98,11 @@ const I18N = {
     legendShift: "Torah center moves",
     railHandle: "Drag to resize",
     barOpen: "Click to open the Wikipedia article",
+    pinFig: "Pin to keep this location on the map",
+    unpinFig: "Unpin",
     approx: "approx.",
     centerMove: "Torah center moves",
-    wikiGo: "↗ Wikipedia — click to open",
+    wikiGo: "Wikipedia — click to open",
     aboutBtn: "About",
     search: "Search a sage…",
     legendCap: "Eras",
@@ -134,7 +138,7 @@ function enTerm(f) {
 // when the exact title differs), so we never hit a dead link.
 // Default to the desktop domain — on some networks the .m mobile host's redirect
 // aborts inside an iframe, while the desktop host follows redirects cleanly. The
-// drawer's 📱 toggle opts into the .m host for the nicer mobile reading layout.
+// drawer's mobile (smartphone) toggle opts into the .m host for the nicer mobile reading layout.
 let mobileWiki = localStorage.getItem("mobileWiki") === "1";
 const wikiHost = (lang) => lang + (mobileWiki ? ".m" : "") + ".wikipedia.org";
 const articleUrl = (lang, title) => "https://" + wikiHost(lang) + "/wiki/" + encodeURIComponent(title.replace(/ /g, "_"));
@@ -269,7 +273,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeDra
 function figureTip(f) {
   const books = f.books.map((b) => {
     const primary = isRTL() ? b.he : b.en, secondary = isRTL() ? b.en : b.he;
-    return `<div class="b">📖 ${primary} <span class="by">(${fmtYear(b.y)})</span><br><span style="color:#9b9384">${secondary}</span></div>`;
+    return `<div class="b">${icon("book-open", "ic-book")}${primary} <span class="by">(${fmtYear(b.y)})</span><br><span style="color:#9b9384">${secondary}</span></div>`;
   }).join("");
   const r = REGIONS[f.region];
   const primary = isRTL() ? f.he : f.en, secondary = isRTL() ? f.en : f.he;
@@ -277,10 +281,10 @@ function figureTip(f) {
   return `<h4>${primary}</h4>
     <div class="en">${secondary}</div>
     <div>${f.note}</div>
-    <div class="meta">${fmtRange(f.born, f.died)}${f.circa ? " (" + t("approx") + ")" : ""} · 📍 ${f.place}</div>
+    <div class="meta">${fmtRange(f.born, f.died)}${f.circa ? " (" + t("approx") + ")" : ""} · ${icon("map-pin", "ic-pin")}${f.place}</div>
     <div class="region-tip"><i style="background:${r.color}"></i>${region}</div>
     <div class="books">${books}</div>
-    <div class="go">${t("wikiGo")}</div>`;
+    <div class="go">${icon("arrow-up-right", "ic-go")}${t("wikiGo")}</div>`;
 }
 
 // ---------- builders ----------
@@ -344,7 +348,7 @@ function buildCols() {
     bar.title = t("barOpen");
     bar.addEventListener("mousemove", (e) => showTip(figureTip(f), e));
     bar.addEventListener("mouseenter", () => { showBorders(f); showPin(f); });
-    bar.addEventListener("mouseleave", () => { hideTip(); clearBorders(); hidePin(); });
+    bar.addEventListener("mouseleave", () => { hideTip(); restoreMap(); });
     bar.addEventListener("click", () => { hideTip(); openDrawer(f.w, enTerm(f), isRTL() ? f.he : f.en); });
 
     // region chip → toggle the geographic highlight (don't open Wikipedia)
@@ -353,6 +357,16 @@ function buildCols() {
       toggleRegion(f.region);
     });
 
+    // pin toggle → keep this sage's pin + era borders on the map at rest
+    const pinBtn = document.createElement("button");
+    pinBtn.className = "bar-pin";
+    pinBtn.innerHTML = icon("pin", "ic-barpin");
+    pinBtn.title = t(f === pinnedFig ? "unpinFig" : "pinFig");
+    pinBtn.setAttribute("aria-label", pinBtn.title);
+    if (f === pinnedFig) bar.classList.add("pinned");
+    pinBtn.addEventListener("click", (e) => { e.stopPropagation(); togglePin(f); });
+    bar.appendChild(pinBtn);
+
     f.books.forEach((b) => {
       const dot = document.createElement("div");
       dot.className = "book";
@@ -360,7 +374,7 @@ function buildCols() {
       dot.addEventListener("mousemove", (e) => {
         e.stopPropagation();
         const bp = isRTL() ? b.he : b.en, bs = isRTL() ? b.en : b.he, fn = isRTL() ? f.he : f.en;
-        showTip(`<h4>📖 ${bp}</h4><div class="en">${bs}</div><div class="meta">${fmtYear(b.y)} · ${fn}</div>`, e);
+        showTip(`<h4>${icon("book-open", "ic-book")}${bp}</h4><div class="en">${bs}</div><div class="meta">${fmtYear(b.y)} · ${fn}</div>`, e);
       });
       dot.addEventListener("mouseleave", hideTip);
       bar.appendChild(dot);
@@ -501,7 +515,7 @@ function syncRegionUI() {
   const label = keys.length <= 2
     ? keys.map((k) => isRTL() ? REGIONS[k].he : REGIONS[k].en).join(" · ")
     : `${keys.length} ${t("regionsWord")}`;
-  btn.innerHTML = `${dots}${label}<span class="x">✕</span>`;
+  btn.innerHTML = `${dots}${label}<span class="x">${icon("x")}</span>`;
 }
 
 // ---------- world map ----------
@@ -545,11 +559,11 @@ function buildMap() {
 // and paint outlines + Hebrew labels into #map-borders until the mouse leaves.
 let BORDER_YEARS = null;                 // sorted slice years, from borders/index.json
 const borderCache = {};                  // year -> features array (or "loading")
-let borderToken = 0;                     // guards against out-of-order async paints
+let wantedSlice = null;                  // slice the cursor currently wants painted
 
 fetch("borders/index.json")
   .then((r) => r.json())
-  .then((ys) => { BORDER_YEARS = ys; })
+  .then((ys) => { BORDER_YEARS = ys; restBorders(); })  // paint the resting (contemporary) map
   .catch(() => { BORDER_YEARS = []; });  // fail quiet: overlay just stays off
 
 function figureYear(f) {                 // mid-life best represents a sage's era
@@ -563,6 +577,22 @@ function nearestSlice(year) {
 function borderCaption(y) {
   if (!isRTL()) return y < 0 ? `Borders · ${-y} BCE` : `Borders · ${y} CE`;
   return y < 0 ? `גבולות · ${-y} לפנה"ס` : `גבולות · שנת ${y} לסה"נ`;
+}
+// A small spinning ring (echoing the Wikipedia drawer's .dspinner, but subtle —
+// it's only a map layer) shown while a slice is being fetched, so a slow load
+// reads as "loading" rather than "no borders for this era". Tucked into the
+// caption corner; replaced by paintBorders (or cleared) once the fetch settles.
+function paintBorderLoading() {
+  const g = document.getElementById("map-borders");
+  const cx = 142.5, cy = 120, r = 13;
+  const msg = isRTL() ? "טוען נתוני מפה" : "Loading map data";
+  g.innerHTML =
+    `<rect class="bloader-dim" x="0" y="0" width="285" height="252"></rect>` +
+    `<g class="bloader">` +
+    `<circle class="bloader-track" cx="${cx}" cy="${cy}" r="${r}"></circle>` +
+    `<circle class="bloader-arc" cx="${cx}" cy="${cy}" r="${r}"></circle>` +
+    `</g>` +
+    `<text class="bloader-msg" x="${cx}" y="${cy + r + 16}">${msg}</text>`;
 }
 function paintBorders(year, feats) {
   const g = document.getElementById("map-borders");
@@ -633,24 +663,39 @@ function declutterLabels(nodes, cap) {
     bx.n.setAttribute("y", (y + bx.dy).toFixed(1));
   });
 }
-function showBorders(f) {
-  const slice = nearestSlice(figureYear(f));
+function loadAndPaint(slice) {
   if (slice === null) return;
-  const token = ++borderToken;
+  wantedSlice = slice;                    // remember what the cursor wants now
   const cached = borderCache[slice];
   if (Array.isArray(cached)) { paintBorders(slice, cached); return; }
-  if (cached === "loading") return;      // in-flight; its .then will paint
+  paintBorderLoading();                   // show a loading hint until the fetch lands
+  if (cached === "loading") return;       // in-flight; its .then will paint if still wanted
   borderCache[slice] = "loading";
   fetch(`borders/${slice}.json`)
     .then((r) => r.json())
     .then((data) => {
       borderCache[slice] = data.f;
-      if (token === borderToken) paintBorders(slice, data.f); // still the active hover
+      if (wantedSlice === slice) paintBorders(slice, data.f); // still the slice we want
     })
-    .catch(() => { borderCache[slice] = []; });
+    .catch(() => {
+      borderCache[slice] = [];
+      if (wantedSlice === slice) clearBorders();              // drop the loading hint
+    });
+}
+function showBorders(f) { loadAndPaint(nearestSlice(figureYear(f))); }
+// Resting state: with no sage hovered, the map shows present-day borders (the
+// most recent slice). Hover swaps in the era map; mouseleave returns here.
+function restBorders() {
+  if (BORDER_YEARS && BORDER_YEARS.length) loadAndPaint(BORDER_YEARS[BORDER_YEARS.length - 1]);
+}
+// Repaint the currently-wanted slice in the active UI language (e.g. after a
+// language toggle), so resting labels track the chrome without a fresh hover.
+function repaintBorders() {
+  if (wantedSlice !== null && Array.isArray(borderCache[wantedSlice]))
+    paintBorders(wantedSlice, borderCache[wantedSlice]);
 }
 function clearBorders() {
-  borderToken++;
+  wantedSlice = null;
   document.getElementById("map-borders").innerHTML = "";
 }
 
@@ -760,6 +805,29 @@ function hidePin() {
   document.getElementById("map-svg").classList.remove("pinned");
 }
 
+// ---------- sticky pin (a sage held on the map without hovering) ----------
+// One figure may be "pinned": its era borders + location pin persist on the map
+// at rest, instead of the contemporary resting map. Hover still previews other
+// sages; leaving a bar returns to the pinned sage (or the resting map if none).
+let pinnedFig = null;
+function restoreMap() {
+  if (pinnedFig) { showBorders(pinnedFig); showPin(pinnedFig); }
+  else { restBorders(); hidePin(); }
+}
+function togglePin(f) {
+  pinnedFig = (pinnedFig === f) ? null : f;
+  document.querySelectorAll(".bar.pinned").forEach((b) => b.classList.remove("pinned"));
+  document.querySelectorAll(".bar").forEach((b) => {
+    const btn = b.querySelector(".bar-pin");
+    if (!btn) return;
+    const isPinned = +b.dataset.fig === (pinnedFig ? pinnedFig._idx : -1);
+    b.classList.toggle("pinned", isPinned);
+    btn.title = t(isPinned ? "unpinFig" : "pinFig");
+    btn.setAttribute("aria-label", btn.title);
+  });
+  restoreMap();
+}
+
 // gutter width is user-resizable (drag handle on the rail's inner edge); persisted.
 // on phones a 150px+ gutter would swallow the screen, so allow it to go narrower.
 const isMobile = window.innerWidth <= 640;
@@ -794,8 +862,8 @@ function buildEvents() {
   elegend.className = "elegend";
   const legItems = [
     { type: "world", dot: `<span class="edot world"></span>`, label: t("legendWorld") },
-    { type: "jewish", dot: `<span class="edot jewish">✡</span>`, label: t("legendJewish") },
-    { type: "shift", dot: `<span class="edot shift">⇦</span>`, label: t("legendShift") },
+    { type: "jewish", dot: `<span class="edot jewish">${icon("star-of-david")}</span>`, label: t("legendJewish") },
+    { type: "shift", dot: `<span class="edot shift">${icon("arrow-left")}</span>`, label: t("legendShift") },
   ];
   elegend.innerHTML = legItems.map(({ type, dot, label }) => {
     const on = !selEventTypes.size || selEventTypes.has(type);
@@ -863,18 +931,18 @@ function buildEvents() {
     flag.className = evt.shift ? "eflag shift" : evt.j ? "eflag jewish" : "eflag";
     flag.style.top = placed[i].labelY + "px";
     flag.style[rtl ? "right" : "left"] = flagInset + "px";
-    const mark = evt.shift ? `<span class="smark">⇦</span>`
-               : evt.j ? `<span class="emark">✡</span>` : "";
+    const mark = evt.shift ? `<span class="smark">${icon("arrow-left")}</span>`
+               : evt.j ? `<span class="emark">${icon("star-of-david")}</span>` : "";
     // event `en` strings carry search hints after ";"/"&"; the flag wants a concise label
     const enLabel = evt.en.split(/[;&]/)[0].trim();
     const ep = rtl ? evt.he : enLabel, es = rtl ? evt.en : evt.he;
     flag.innerHTML = `${mark}${ep}<span class="yr">${fmtYear(evt.y)}</span>`;
-    const place = evt.place ? `<div class="meta">📍 ${evt.place}</div>` : "";
+    const place = evt.place ? `<div class="meta">${icon("map-pin", "ic-pin")}${evt.place}</div>` : "";
     const note = evt.shift ? `<div class="meta">${t("centerMove")}</div>` : "";
     flag.addEventListener("mousemove", (e) =>
       showTip(`<h4>${ep}</h4><div class="en">${es}</div>` +
               `<div class="meta">${fmtYear(evt.y)}</div>${place}${note}` +
-              `<div class="go">${t("wikiGo")}</div>`, e));
+              `<div class="go">${icon("arrow-up-right", "ic-go")}${t("wikiGo")}</div>`, e));
     flag.addEventListener("mouseenter", () => showHL(trueY, evColor(evt)));
     flag.addEventListener("mouseleave", () => { hideTip(); hideHL(); });
     flag.addEventListener("click", () => {
@@ -1002,12 +1070,12 @@ document.getElementById("show-events").addEventListener("change", renderAll);
 document.getElementById("region-reset").addEventListener("click", clearRegions);
 document.getElementById("map-toggle").addEventListener("click", () =>
   document.getElementById("map-panel").classList.toggle("collapsed"));
-// ---- free-resizable map: drag the corner grip to any size; the ⤢ button is a
+// ---- free-resizable map: drag the corner grip to any size; the enlarge button is a
 // quick default↔2x preset. Width is persisted; the SVG (width:100%) scales to fit.
 (function makeMapResizable() {
   const panel = document.getElementById("map-panel");
   if (!panel) return;
-  const DEFW = 260, BIGW = 520, MINW = 190;
+  const DEFW = 260, MINW = 190;
   const maxW = () => Math.min(window.innerWidth * 0.94, 760);
 
   function setWidth(w) {
@@ -1023,38 +1091,80 @@ document.getElementById("map-toggle").addEventListener("click", () =>
     if (saved) setWidth(saved);
   } catch (_) {}
 
-  // ⤢ button: toggle between the default and the 2x preset
-  document.getElementById("map-size").addEventListener("click", () => {
-    panel.classList.remove("collapsed");        // enlarging implies showing it
-    setWidth(panel.getBoundingClientRect().width < (DEFW + BIGW) / 2 ? BIGW : DEFW);
-  });
-
-  if (isMobile) return;                          // no drag-grip on touch layouts
-  const grip = document.createElement("div");
+  if (isMobile) return;                          // no edge-resize on touch layouts
+  const grip = document.createElement("div");    // bottom-corner affordance only
   grip.className = "map-resize";
-  grip.title = "גרור לשינוי גודל המפה";
+  grip.title = "גרור משולי המסגרת לשינוי גודל המפה";
   panel.appendChild(grip);
 
-  let resizing = false, left0 = 0;
-  grip.addEventListener("pointerdown", e => {
+  // Resize by dragging anywhere on the panel's frame: grab within EDGE px of the
+  // left/right/bottom border and drag. The left edge anchors the right side (grows
+  // leftward); the right/bottom edges anchor the left side. Width drives everything
+  // (the SVG is width:100%), so vertical drags just track the corner.
+  const EDGE = 8;
+  function zone(e) {
+    if (e.target.closest(".map-toggle")) return null; // let header buttons work
     const r = panel.getBoundingClientRect();
-    // pin to left/top so the width grows rightward predictably in both directions
+    const nearL = e.clientX <= r.left + EDGE, nearR = e.clientX >= r.right - EDGE;
+    const nearB = e.clientY >= r.bottom - EDGE;
+    // cursor: vertical on the bottom edge, diagonal on the bottom corners, else horizontal
+    if (nearL && !nearR) return { dir: "left", cursor: nearB ? "nesw-resize" : "ew-resize", r };
+    if (nearR) return { dir: "right", cursor: nearB ? "nwse-resize" : "ew-resize", r };
+    if (nearB) return { dir: "bottom", cursor: "ns-resize", r };
+    return null;
+  }
+  // The map's aspect ratio is locked (svg width:100%, height:auto), so the bottom edge
+  // resizes vertically: map a desired panel height to the width that yields it.
+  const svg = panel.querySelector("#map-svg");
+  function widthForHeight(h) {
+    const sr = svg.getBoundingClientRect(), pr = panel.getBoundingClientRect();
+    const ratio = sr.width / sr.height;          // svg aspect (≈285/252)
+    const chromeH = pr.height - sr.height;        // header + hint + paddings
+    const chromeW = pr.width - sr.width;          // horizontal paddings
+    return (h - chromeH) * ratio + chromeW;
+  }
+
+  // hover affordance: show the matching resize cursor over the frame
+  panel.addEventListener("pointermove", e => {
+    if (resizing) return;
+    const z = zone(e);
+    panel.style.cursor = z ? z.cursor : "";
+  });
+  panel.addEventListener("pointerleave", () => { if (!resizing) panel.style.cursor = ""; });
+
+  let resizing = false, anchorDir = "right", left0 = 0, right0 = 0, top0 = 0;
+  panel.addEventListener("pointerdown", e => {
+    const z = zone(e);
+    if (!z) return;                              // interior → let header drag etc. run
+    const r = z.r;
     panel.style.left = r.left + "px"; panel.style.top = r.top + "px";
     panel.style.right = "auto"; panel.style.bottom = "auto";
-    left0 = r.left; resizing = true;
-    grip.setPointerCapture(e.pointerId);
-    e.preventDefault(); e.stopPropagation();
-  });
-  grip.addEventListener("pointermove", e => {
-    if (resizing) setWidth(e.clientX - left0);
+    left0 = r.left; right0 = r.right; top0 = r.top; anchorDir = z.dir; resizing = true;
+    panel.setPointerCapture(e.pointerId);
+    e.preventDefault(); e.stopPropagation();     // capture phase: beat the header drag
+  }, true);
+  panel.addEventListener("pointermove", e => {
+    if (!resizing) return;
+    if (anchorDir === "left") {                  // grow leftward, keep right edge put
+      const w = setWidth(right0 - e.clientX);
+      panel.style.left = (right0 - w) + "px";
+    } else if (anchorDir === "bottom") {         // grow downward, keep top edge put
+      setWidth(widthForHeight(e.clientY - top0));
+    } else {
+      setWidth(e.clientX - left0);
+    }
   });
   function end(e) {
     if (!resizing) return;
-    resizing = false;
-    try { grip.releasePointerCapture(e.pointerId); } catch (_) {}
+    resizing = false; panel.style.cursor = "";
+    try { panel.releasePointerCapture(e.pointerId); } catch (_) {}
+    try {                                        // persist the (possibly shifted) position
+      const r = panel.getBoundingClientRect();
+      localStorage.setItem("mapPos", JSON.stringify({ left: r.left, top: r.top }));
+    } catch (_) {}
   }
-  grip.addEventListener("pointerup", end);
-  grip.addEventListener("pointercancel", end);
+  panel.addEventListener("pointerup", end);
+  panel.addEventListener("pointercancel", end);
 })();
 
 // ---- dismissible data-quality warning (remembers the dismissal) ----
@@ -1177,6 +1287,7 @@ function applyLang() {
 
   buildLegend();
   buildMap();
+  repaintBorders();   // resting/active border labels follow the UI language
   renderAll();
 }
 
