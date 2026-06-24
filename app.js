@@ -883,7 +883,8 @@ document.getElementById("map-toggle").addEventListener("click", () =>
 document.getElementById("map-size").addEventListener("click", () => {
   const panel = document.getElementById("map-panel");
   panel.classList.remove("collapsed");        // enlarging implies showing it
-  panel.classList.toggle("large");
+  const large = panel.classList.toggle("large");
+  try { localStorage.setItem("mapLarge", large ? "1" : "0"); } catch (_) {}
 });
 
 // ---- dismissible data-quality warning (remembers the dismissal) ----
@@ -913,7 +914,15 @@ document.getElementById("map-size").addEventListener("click", () => {
     panel.style.top = top + "px";
     panel.style.right = "auto";
     panel.style.bottom = "auto";
+    return { left, top };
   }
+
+  // restore a remembered position (desktop only; clamped on next move/resize)
+  if (!isMobile) try {
+    const saved = JSON.parse(localStorage.getItem("mapPos") || "null");
+    if (saved && typeof saved.left === "number" && typeof saved.top === "number")
+      place(saved.left, saved.top);
+  } catch (_) {}
 
   head.addEventListener("pointerdown", e => {
     if (e.target.closest(".map-toggle")) return; // let the collapse button work
@@ -937,6 +946,10 @@ document.getElementById("map-size").addEventListener("click", () => {
     dragging = false;
     head.classList.remove("dragging");
     try { head.releasePointerCapture(e.pointerId); } catch (_) {}
+    if (moved) try {
+      const r = panel.getBoundingClientRect();
+      localStorage.setItem("mapPos", JSON.stringify({ left: r.left, top: r.top }));
+    } catch (_) {}
   }
   head.addEventListener("pointerup", endDrag);
   head.addEventListener("pointercancel", endDrag);
@@ -1014,6 +1027,12 @@ function setLang(l) {
 if (isMobile) {
   document.getElementById("map-panel").classList.add("collapsed");
   document.getElementById("show-events").checked = false;
+} else {
+  // restore the remembered map pane size (large vs. normal)
+  try {
+    if (localStorage.getItem("mapLarge") === "1")
+      document.getElementById("map-panel").classList.add("large");
+  } catch (_) {}
 }
 
 // `mode` is already resolved (saved choice, else language default); reflect it
