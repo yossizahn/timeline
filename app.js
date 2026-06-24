@@ -20,6 +20,9 @@ let lang = savedLang === "en" || savedLang === "he" ? savedLang : /^(he|iw)/.tes
 const savedMode = localStorage.getItem("yearMode");
 let mode = savedMode === "heb" || savedMode === "sec" ? savedMode : lang === "he" ? "heb" : "sec";
 const selRegions = new Set(); // active region (country) filters; empty = show all
+const selEventTypes = new Set(); // active event-type filters (world/jewish/shift); empty = show all
+const eventType = (evt) => evt.shift ? "shift" : evt.j ? "jewish" : "world";
+const eventTypeShown = (evt) => !selEventTypes.size || selEventTypes.has(eventType(evt));
 
 // ---------- UI strings (RTL Hebrew / LTR English) ----------
 const I18N = {
@@ -782,13 +785,25 @@ function buildEvents() {
   einner.className = "einner";
   layer.appendChild(einner);
 
-  // pinned legend for the three event types (stays put, not translated)
+  // pinned legend for the three event types (stays put, not translated).
+  // Each item is a filter toggle: click one to isolate its type, click more to
+  // add them back. Empty selection == all shown (the default). The legend takes
+  // pointer events so clicks land on it instead of falling through to a flag
+  // that has scrolled underneath it.
   const elegend = document.createElement("div");
   elegend.className = "elegend";
-  elegend.innerHTML =
-    `<span class="eitem"><span class="edot world"></span>${t("legendWorld")}</span>` +
-    `<span class="eitem"><span class="edot jewish">✡</span>${t("legendJewish")}</span>` +
-    `<span class="eitem"><span class="edot shift">⇦</span>${t("legendShift")}</span>`;
+  const legItems = [
+    { type: "world", dot: `<span class="edot world"></span>`, label: t("legendWorld") },
+    { type: "jewish", dot: `<span class="edot jewish">✡</span>`, label: t("legendJewish") },
+    { type: "shift", dot: `<span class="edot shift">⇦</span>`, label: t("legendShift") },
+  ];
+  elegend.innerHTML = legItems.map(({ type, dot, label }) => {
+    const on = !selEventTypes.size || selEventTypes.has(type);
+    return `<button type="button" class="eitem${on ? " on" : " off"}" ` +
+           `data-type="${type}" aria-pressed="${on}">${dot}${label}</button>`;
+  }).join("");
+  elegend.querySelectorAll(".eitem").forEach((el) =>
+    el.addEventListener("click", () => toggleEventType(el.dataset.type)));
   layer.appendChild(elegend);
 
   // resize handle on the rail's inner edge (stays full-height, not translated)
@@ -808,7 +823,7 @@ function buildEvents() {
 
   // de-cluster: push overlapping labels down, keep the true year on the spine
   let lastY = -999;
-  const placed = EVENTS.slice().sort((a, b) => a.y - b.y).map((evt) => {
+  const placed = EVENTS.filter(eventTypeShown).sort((a, b) => a.y - b.y).map((evt) => {
     const trueY = y(evt.y);
     const labelY = Math.max(trueY, lastY + MINGAP);
     lastY = labelY;
@@ -868,6 +883,17 @@ function buildEvents() {
     });
     fwrap.appendChild(flag);
   });
+}
+
+// Event-type legend filter (multi-select). From the all-shown default the first
+// click isolates that type; further clicks toggle the others in and out. An
+// empty selection means "show all" — so a full or emptied set both reset to it.
+function toggleEventType(type) {
+  if (selEventTypes.has(type)) selEventTypes.delete(type);
+  else selEventTypes.add(type);
+  if (selEventTypes.size === 3) selEventTypes.clear();   // all on == default
+  buildEvents();
+  syncRail();
 }
 
 function buildLegend() {
