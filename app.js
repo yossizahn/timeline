@@ -1039,14 +1039,33 @@ function buildEvents() {
   const flagX = rtl ? EVT_GUTTER - flagInset : flagInset;
   const MINGAP = 23;                  // min vertical spacing between labels
 
-  // de-cluster: push overlapping labels down, keep the true year on the spine
-  let lastY = -999;
-  const placed = EVENTS.filter(eventTypeShown).sort((a, b) => a.y - b.y).map((evt) => {
-    const trueY = y(evt.y);
-    const labelY = Math.max(trueY, lastY + MINGAP);
-    lastY = labelY;
-    return { evt, trueY, labelY };
+  // De-cluster labels, keeping the true year on the spine. Where several events
+  // fall close together, spread the whole group *symmetrically* around its true
+  // positions instead of only shoving each one down: centering lifts the earlier
+  // labels up and lets the later ones drop, so a dense run leaves room for what
+  // follows and the leader lines stay short. (Pool-adjacent-violators — merge
+  // overlapping groups, then center each on its members' mean position.)
+  const items = EVENTS.filter(eventTypeShown).sort((a, b) => a.y - b.y)
+    .map((evt) => ({ evt, trueY: y(evt.y) }));
+  const blocks = [];                  // each: { idxs, sum: Σ trueY, start } at MINGAP spacing
+  items.forEach((it, i) => {
+    blocks.push({ idxs: [i], sum: it.trueY, start: it.trueY });
+    while (blocks.length > 1) {
+      const prev = blocks[blocks.length - 2], cur = blocks[blocks.length - 1];
+      if (cur.start >= prev.start + prev.idxs.length * MINGAP) break;   // no overlap → done
+      const idxs = prev.idxs.concat(cur.idxs), sum = prev.sum + cur.sum;
+      const start = sum / idxs.length - MINGAP * (idxs.length - 1) / 2;  // center on mean
+      blocks.splice(blocks.length - 2, 2, { idxs, sum, start });
+    }
   });
+  const placed = items.map((it) => ({ evt: it.evt, trueY: it.trueY, labelY: it.trueY }));
+  let lastBottom = 0;                 // clamp to the top edge while preserving the gap
+  blocks.forEach((blk) =>
+    blk.idxs.forEach((idx, k) => {
+      const labelY = Math.max(blk.start + k * MINGAP, lastBottom);
+      placed[idx].labelY = labelY;
+      lastBottom = labelY + MINGAP;
+    }));
 
   // spine + dots + leader lines (SVG)
   const NS = "http://www.w3.org/2000/svg";
