@@ -664,10 +664,12 @@ function buildMap() {
 let BORDER_YEARS = null;                 // sorted slice years, from borders/index.json
 const borderCache = {};                  // year -> features array (or "loading")
 let wantedSlice = null;                  // slice the cursor currently wants painted
+let manualYear = null;                   // year the user dragged the scrubber to (null = present-day rest)
+let borderSlider = null;                 // the #border-year range input, once wired
 
 fetch("borders/index.json")
   .then((r) => r.json())
-  .then((ys) => { BORDER_YEARS = ys; restBorders(); })  // paint the resting (contemporary) map
+  .then((ys) => { BORDER_YEARS = ys; initBorderSlider(); restBorders(); })  // paint the resting (contemporary) map
   .catch(() => { BORDER_YEARS = []; });  // fail quiet: overlay just stays off
 
 function figureYear(f) {                 // mid-life best represents a sage's era
@@ -786,17 +788,61 @@ function loadAndPaint(slice) {
       if (wantedSlice === slice) clearBorders();              // drop the loading hint
     });
 }
-function showBorders(f) { loadAndPaint(nearestSlice(figureYear(f))); }
-// Resting state: with no sage hovered, the map shows present-day borders (the
-// most recent slice). Hover swaps in the era map; mouseleave returns here.
+function showBorders(f) { const y = figureYear(f); loadAndPaint(nearestSlice(y)); syncSlider(y); }
+// Resting state: with no sage hovered, the map shows the user's chosen scrubber
+// year if they set one, else present-day borders (the most recent slice). Hover
+// swaps in the era map; mouseleave returns here.
 function restBorders() {
-  if (BORDER_YEARS && BORDER_YEARS.length) loadAndPaint(BORDER_YEARS[BORDER_YEARS.length - 1]);
+  if (!BORDER_YEARS || !BORDER_YEARS.length) return;
+  const y = manualYear != null ? manualYear : BORDER_YEARS[BORDER_YEARS.length - 1];
+  loadAndPaint(nearestSlice(y));
+  syncSlider(y);
 }
 // Repaint the currently-wanted slice in the active UI language (e.g. after a
 // language toggle), so resting labels track the chrome without a fresh hover.
 function repaintBorders() {
   if (wantedSlice !== null && Array.isArray(borderCache[wantedSlice]))
     paintBorders(wantedSlice, borderCache[wantedSlice]);
+  if (borderSlider) updateSliderLabel(+borderSlider.value);
+}
+
+// ---------- border date scrubber ----------
+// A slider under the map sets the political-border year directly; it also tracks
+// the hovered/pinned sage's date automatically (syncSlider, called from
+// show/restBorders). The thumb reads the raw year; the map snaps to the nearest
+// available slice, and the label shows that snapped year so the two stay honest.
+function sliderYearText(y) {
+  if (!isRTL()) return y < 0 ? `${-y} BCE` : `${y} CE`;
+  return y < 0 ? `${-y} לפנה"ס` : `${y} לסה"נ`;
+}
+function updateSliderLabel(year) {
+  const lbl = document.getElementById("border-year-label");
+  if (!lbl) return;
+  const s = nearestSlice(year);
+  lbl.textContent = s == null ? "" : sliderYearText(s);
+}
+// Move the thumb to `year` without re-triggering a paint (programmatic .value
+// doesn't fire 'input'); clamp into the slice range so off-scale dates still land.
+function syncSlider(year) {
+  if (!borderSlider) return;
+  const v = Math.max(+borderSlider.min, Math.min(+borderSlider.max, Math.round(year)));
+  borderSlider.value = v;
+  updateSliderLabel(year);
+}
+function initBorderSlider() {
+  borderSlider = document.getElementById("border-year");
+  if (!borderSlider || !BORDER_YEARS.length) return;
+  borderSlider.min = BORDER_YEARS[0];
+  borderSlider.max = BORDER_YEARS[BORDER_YEARS.length - 1];
+  borderSlider.value = BORDER_YEARS[BORDER_YEARS.length - 1];
+  // Dragging the scrubber sets a manual resting year. A pinned sage would
+  // otherwise win on mouseleave, so an explicit date choice unpins him.
+  borderSlider.addEventListener("input", () => {
+    manualYear = +borderSlider.value;
+    if (pinnedFig) { togglePin(pinnedFig); return; }   // unpin → restoreMap → restBorders(manualYear)
+    loadAndPaint(nearestSlice(manualYear));
+    updateSliderLabel(manualYear);
+  });
 }
 function clearBorders() {
   wantedSlice = null;

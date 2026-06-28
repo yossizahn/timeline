@@ -446,6 +446,57 @@ body.col-resizing { cursor: col-resize; user-select: none; }
 .map-body { padding: 8px 8px 6px; }
 .map-body svg { width: 100%; height: auto; display: block; border-radius: 8px; }
 .map-hint { text-align: center; color: var(--muted); font-size: 11px; margin-top: 4px; }
+/* date scrubber for the political-border overlay: drag to any year (snaps to the
+   nearest border slice); also auto-tracks the hovered sage's date. Direction is
+   inherited from the UI dir, so the thumb travels oldest→present the natural way
+   for each language (RTL: present on the left; LTR: present on the right). */
+.map-slider { display: flex; align-items: center; gap: 8px; margin-top: 7px; }
+.map-slider-year {
+  flex: 0 0 auto; font-size: 10px; color: var(--muted); min-width: 52px;
+  text-align: start; font-variant-numeric: tabular-nums; white-space: nowrap; opacity: .85;
+}
+/* a thin, restrained scrubber: 3px hairline track, small circular thumb that
+   warms to --shift on interaction. Custom-styled per engine (no native chrome). */
+.map-slider input[type="range"] {
+  flex: 1 1 auto; min-width: 0; height: 14px; margin: 0; cursor: pointer;
+  -webkit-appearance: none; appearance: none; background: transparent;
+}
+.map-slider input[type="range"]::-webkit-slider-runnable-track {
+  height: 3px; border-radius: 999px;
+  background: color-mix(in srgb, var(--muted) 28%, transparent);
+}
+.map-slider input[type="range"]::-moz-range-track {
+  height: 3px; border-radius: 999px;
+  background: color-mix(in srgb, var(--muted) 28%, transparent);
+}
+.map-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; margin-top: -4px;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--panel); border: 1.5px solid var(--muted);
+  transition: border-color .15s ease, transform .12s ease, box-shadow .15s ease;
+}
+.map-slider input[type="range"]::-moz-range-thumb {
+  width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--muted);
+  background: var(--panel);
+  transition: border-color .15s ease, transform .12s ease, box-shadow .15s ease;
+}
+.map-slider input[type="range"]:hover::-webkit-slider-thumb,
+.map-slider input[type="range"]:focus-visible::-webkit-slider-thumb {
+  border-color: var(--shift); transform: scale(1.12);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--shift) 18%, transparent);
+}
+.map-slider input[type="range"]:hover::-moz-range-thumb,
+.map-slider input[type="range"]:focus-visible::-moz-range-thumb {
+  border-color: var(--shift); transform: scale(1.12);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--shift) 18%, transparent);
+}
+.map-slider input[type="range"]:active::-webkit-slider-thumb {
+  border-color: var(--shift); background: var(--shift);
+}
+.map-slider input[type="range"]:active::-moz-range-thumb {
+  border-color: var(--shift); background: var(--shift);
+}
+.map-slider input[type="range"]:focus { outline: none; }
 
 /* era political borders, shown while hovering a sage */
 #map-borders { pointer-events: none; }
