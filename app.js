@@ -438,6 +438,7 @@ function recallHistory(dir) {
   searchBox.setSelectionRange(end, end);
   searchMatches = buildMatches(searchBox.value);   // keep Enter able to jump
   searchActive = searchMatches.length ? 0 : -1;
+  renderMenu();                                    // open the autocomplete, just like typing
 }
 
 function buildMatches(raw) {
@@ -559,18 +560,22 @@ searchBox.addEventListener("input", () => {
   renderMenu();
 });
 searchBox.addEventListener("keydown", (e) => {
-  // with the autocomplete menu open, the arrows move through the matches
-  if (!searchMenu.hidden && searchMatches.length) {
+  // with the autocomplete menu open on freshly typed text, the arrows move
+  // through the matches — but while recalling history (histPos > 0) the arrows
+  // keep stepping through recent searches even though the menu is now open
+  if (histPos === 0 && !searchMenu.hidden && searchMatches.length) {
     if (e.key === "ArrowDown") { e.preventDefault(); searchActive = (searchActive + 1) % searchMatches.length; renderMenu(); }
     else if (e.key === "ArrowUp") { e.preventDefault(); searchActive = (searchActive - 1 + searchMatches.length) % searchMatches.length; renderMenu(); }
     else if (e.key === "Enter") { e.preventDefault(); chooseMatch(searchActive); }
     else if (e.key === "Escape") { closeMenu(); }
     return;
   }
-  // menu closed: the arrows recall recent searches instead
+  // live draft / history recall: the arrows step through recent searches, each
+  // recalled term opening its autocomplete like a fresh search
   if (e.key === "ArrowUp") { e.preventDefault(); recallHistory(1); }
   else if (e.key === "ArrowDown") { e.preventDefault(); recallHistory(-1); }
   else if (e.key === "Enter") { e.preventDefault(); if (searchMatches.length) chooseMatch(searchActive < 0 ? 0 : searchActive); }
+  else if (e.key === "Escape") { closeMenu(); }
 });
 // mousedown (before the input's blur) so the pick registers
 searchMenu.addEventListener("mousedown", (e) => {
