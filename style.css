@@ -286,6 +286,10 @@ body.col-resizing { cursor: col-resize; user-select: none; }
   pointer-events: none;
 }
 .ehl.show { opacity: .45; }
+/* a pinned sage's pair stays put until unpinned — solid and a touch bolder so it
+   reads as anchored next to the dashed hover/event lines */
+.ehl.pin { border-top-style: solid; }
+.ehl.pin.show { opacity: .7; }
 .events .eflag {
   position: absolute; transform: translateY(-50%);
   background: #fff; border: 1px solid var(--event); color: var(--event);
