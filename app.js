@@ -355,8 +355,13 @@ function buildCols() {
       `<span class="region"><i style="background:${r.color}"></i>${isRTL() ? r.he : r.en}</span>`;
     bar.title = t("barOpen");
     bar.addEventListener("mousemove", (e) => showTip(figureTip(f), e));
-    bar.addEventListener("mouseenter", () => { showBorders(f); showPin(f); });
-    bar.addEventListener("mouseleave", () => { hideTip(); restoreMap(); });
+    bar.addEventListener("mouseenter", () => {
+      showBorders(f); showPin(f);
+      // two full-width lines flush with the bar's top and bottom edges
+      const [t, b] = barSpan(bar);
+      showSpan(t, b, ERAS[f.era].color);
+    });
+    bar.addEventListener("mouseleave", () => { hideTip(); restoreMap(); hideSpan(); });
     bar.addEventListener("click", () => { hideTip(); openDrawer(f.w, enTerm(f), isRTL() ? f.he : f.en); });
 
     // region chip → toggle the geographic highlight (don't open Wikipedia)
@@ -986,6 +991,7 @@ function togglePin(f) {
     btn.setAttribute("aria-label", btn.title);
   });
   restoreMap();
+  syncPinSpan();      // keep the pinned sage's lines on screen until unpinned
 }
 
 // gutter width is user-resizable (drag handle on the rail's inner edge); persisted.
@@ -1198,25 +1204,66 @@ document.getElementById("events").addEventListener("wheel", (e) => {
   e.preventDefault();
 }, { passive: false });
 
-// ---------- correlation line (fixed across the chart, follows vertical scroll) ----------
-const ehl = document.createElement("div");
-ehl.className = "ehl";
-document.body.appendChild(ehl);
-let hlY = null, hlColor = null;       // hlY is in canvas coords (same as y())
-function positionHL() {
-  if (hlY === null) return;
-  const r = chartWrap.getBoundingClientRect();
-  ehl.style.top = (r.top + hlY - chartWrap.scrollTop) + "px";
-  ehl.style.left = r.left + "px";     // span only the chart, not the sidebar
-  ehl.style.width = r.width + "px";
+// ---------- correlation lines (fixed across the chart, follow vertical scroll) ----------
+// A hovered event gets one dashed line at its year; a hovered sage gets two — at
+// his birth and death years — so his span can be lined up against events and the
+// other sages without scrolling back and forth. A *pinned* sage keeps his own
+// solid pair on screen until unpinned, so a second sage can be compared against
+// it just by hovering (hover pair + pin pair coexist).
+function mkHL(extra) {
+  const el = document.createElement("div");
+  el.className = "ehl" + (extra ? " " + extra : "");
+  document.body.appendChild(el);
+  return el;
 }
+const ehl = mkHL();                       // single line — hovered event
+const fhl = [mkHL(), mkHL()];             // pair — hovered sage's born / died
+const phl = [mkHL("pin"), mkHL("pin")];   // pair — pinned sage's born / died (persistent)
+let hlY = null;                           // event line, canvas coords (same as y())
+let spanY = null;                         // [bornY, diedY] for the hovered sage, or null
+let pinY = null;                          // [bornY, diedY] for the pinned sage, or null
+function placeLine(el, canvasY, r) {
+  el.style.top = (r.top + canvasY - chartWrap.scrollTop) + "px";
+  el.style.left = r.left + "px";          // span only the chart, not the sidebar
+  el.style.width = r.width + "px";
+}
+function placePair(els, ys, r) { placeLine(els[0], ys[0], r); placeLine(els[1], ys[1], r); }
+function positionHL() {
+  if (hlY === null && !spanY && !pinY) return;
+  const r = chartWrap.getBoundingClientRect();
+  if (hlY !== null) placeLine(ehl, hlY, r);
+  if (spanY) placePair(fhl, spanY, r);
+  if (pinY) placePair(phl, pinY, r);
+}
+function paintPair(els, color) { els.forEach((el) => { el.style.borderTopColor = color; el.classList.add("show"); }); }
 function showHL(canvasY, color) {
-  hlY = canvasY; hlColor = color;
+  hlY = canvasY;
   ehl.style.borderTopColor = color;
   positionHL();
   ehl.classList.add("show");
 }
 function hideHL() { hlY = null; ehl.classList.remove("show"); }
+function showSpan(y1, y2, color) { spanY = [y1, y2]; paintPair(fhl, color); positionHL(); }
+function hideSpan() { spanY = null; fhl.forEach((el) => el.classList.remove("show")); }
+function showPinSpan(y1, y2, color) { pinY = [y1, y2]; paintPair(phl, color); positionHL(); }
+function hidePinSpan() { pinY = null; phl.forEach((el) => el.classList.remove("show")); }
+
+// A bar's [top, bottom] in scroll-content coords. Measured from the live rect,
+// not style.top: the canvas padding offsets the field, so style.top sits ~14px
+// above the bar's true position.
+function barSpan(bar) {
+  const wr = chartWrap.getBoundingClientRect();
+  const br = bar.getBoundingClientRect();
+  const top = br.top - wr.top + chartWrap.scrollTop;
+  return [top, top + br.height];
+}
+// Reflect the current pinned sage onto the persistent pair (or clear it).
+function syncPinSpan() {
+  const bar = pinnedFig && document.querySelector(`.bar[data-fig="${pinnedFig._idx}"]`);
+  if (!bar) { hidePinSpan(); return; }
+  const [t, b] = barSpan(bar);
+  showPinSpan(t, b, ERAS[pinnedFig.era].color);
+}
 
 // ---------- resizable events sidebar ----------
 function startGutterResize(e) {
@@ -1224,7 +1271,7 @@ function startGutterResize(e) {
   const layer = document.getElementById("events");
   layer.classList.add("resizing");
   document.body.classList.add("col-resizing");
-  hideHL(); hideTip();
+  hideHL(); hideSpan(); hideTip();
   const rect = layer.getBoundingClientRect();
   let raf = 0;
   const onMove = (ev) => {
