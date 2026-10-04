@@ -41,3 +41,7 @@ edge, and please don't treat the structure as gospel.
 Issues and pull requests are very welcome — corrections to dates, names, or
 Wikipedia links, new figures and events, or fixes to anything that looks off.
 Open an [issue](https://github.com/yossizahn/timeline/issues) or send a PR.
+
+## License
+
+[MIT](LICENSE). Bundled third-party material keeps its own terms: icons from [Lucide](https://lucide.dev) (ISC), the coastline in `map.js` from [Natural Earth](https://www.naturalearthdata.com) (public domain), and the political borders in `borders/` from [historical-basemaps](https://github.com/aourednik/historical-basemaps) (CC-BY-SA 4.0).
